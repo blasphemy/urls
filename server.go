@@ -12,6 +12,7 @@ var (
 	urlmap    = make(map[string]string)
 	counter   int64
 	protected = []string{"list", "add"}
+	listenstring = ":5596"
 )
 
 func main() {
@@ -19,7 +20,8 @@ func main() {
 	m.Get("/api/add/**", AddURL)
 	m.Get("/list", ListURLS)
 	m.Get("/:id", GetURLById)
-	log.Fatal(http.ListenAndServe(":5596", m))
+	log.Println("Listening on " + listenstring)
+	log.Fatal(http.ListenAndServe(listenstring, m))
 }
 
 func AddURL(params martini.Params) string {
