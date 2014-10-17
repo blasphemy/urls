@@ -5,6 +5,8 @@ import "strconv"
 import "net/http"
 import "fmt"
 import "strings"
+import "log"
+
 
 var (
 	urlmap    = make(map[string]string)
@@ -17,7 +19,7 @@ func main() {
 	m.Get("/api/add/**", AddURL)
 	m.Get("/list", ListURLS)
 	m.Get("/:id", GetURLById)
-	m.Run()
+	log.Fatal(http.ListenAndServe(":5596", m))
 }
 
 func AddURL(params martini.Params) string {
