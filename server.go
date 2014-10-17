@@ -4,6 +4,7 @@ import "github.com/go-martini/martini"
 import "strconv"
 import "net/http"
 import "fmt"
+import "strings"
 
 var (
 	urlmap    = make(map[string]string)
@@ -33,7 +34,7 @@ func AddURL(params martini.Params) string {
 }
 
 func GetURLById(params martini.Params, w http.ResponseWriter, r *http.Request) {
-	k := urlmap[params["id"]]
+	k := urlmap[strings.ToLower(params["id"])]
 	if k != "" {
 		http.Redirect(w, r, k, http.StatusMovedPermanently)
 	} else {
