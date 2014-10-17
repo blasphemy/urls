@@ -4,18 +4,16 @@ import "github.com/go-martini/martini"
 import "strconv"
 import "net/http"
 import "fmt"
-import "github.com/HouzuoGuo/tiedot/db"
 
 var (
 	urlmap    = make(map[string]string)
 	counter   int64
 	protected = []string{"list", "add"}
-	dbdir     = "db"
 )
 
 func main() {
 	m := martini.Classic()
-	m.Get("/add/**", AddURL)
+	m.Get("/api/add/**", AddURL)
 	m.Get("/list", ListURLS)
 	m.Get("/:id", GetURLById)
 	m.Run()
