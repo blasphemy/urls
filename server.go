@@ -7,11 +7,10 @@ import "fmt"
 import "strings"
 import "log"
 
-
 var (
-	urlmap    = make(map[string]string)
-	counter   int64
-	protected = []string{"list", "add"}
+	urlmap       = make(map[string]string)
+	counter      int64
+	protected    = []string{"list", "add", "api"}
 	listenstring = ":5596"
 )
 
