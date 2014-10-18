@@ -50,7 +50,6 @@ func ApiAddURLHandler(params martini.Params, w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 	} else {
-		l := r.URL.Host
-		w.Write([]byte(l + "/" + k.id))
+		w.Write([]byte(r.URL.Host + "/" + k.id))
 	}
 }
