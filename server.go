@@ -13,11 +13,10 @@ var (
 
 func main() {
 	DB, err := redis.Dial("tcp", ":6379")
-	defer DB.Close()
 	if err != nil {
 		log.Fatal(err.Error())
 	} else {
-		k, _ := DB.Do("GET", "TEST")
+		k, _ := DB.Do("INCR", "COUNTER")
 		log.Print(k)
 	}
 	m := martini.Classic()
