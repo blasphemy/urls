@@ -8,17 +8,11 @@ import "log"
 
 var (
 	listenstring = ":5596"
-	DB           redis.Conn
+	pool         *redis.Pool
 )
 
 func main() {
-	DB, err := redis.Dial("tcp", ":6379")
-	if err != nil {
-		log.Fatal(err.Error())
-	} else {
-		k, _ := DB.Do("INCR", "COUNTER")
-		log.Print(k)
-	}
+	pool = newPool()
 	m := martini.Classic()
 	m.Get("/api/add/**", ApiAddURLHandler)
 	m.Get("/:id", GetURLAndRedirect)

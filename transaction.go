@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"strings"
 )
+import "github.com/garyburd/redigo/redis"
 
 var (
 	protected = []string{"list", "add", "api", "counter"}
@@ -15,6 +16,8 @@ type Url struct {
 }
 
 func GetUrlById(id string) *Url {
+	DB := pool.Get()
+	defer DB.Close()
 	k, _ := DB.Do("GET", strings.ToLower(id))
 	if k != "" {
 		resp := &Url{}
@@ -27,6 +30,8 @@ func GetUrlById(id string) *Url {
 }
 
 func GetNewUrl(link string) *Url {
+	DB := pool.Get()
+	defer DB.Close()
 	i := GetNewCounter()
 	for _, k := range protected {
 		for strconv.FormatInt(i, 36) == k {
@@ -42,6 +47,14 @@ func GetNewUrl(link string) *Url {
 }
 
 func GetNewCounter() int64 {
+	DB := pool.Get()
+	defer DB.Close()
 	n, _ := DB.Do("INCR", "COUNTER")
 	return n.(int64)
+}
+
+func newPool() *redis.Pool {
+	return redis.NewPool(func() (redis.Conn, error) {
+		return redis.Dial("tcp", ":6379")
+	}, 3)
 }
