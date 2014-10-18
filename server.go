@@ -36,12 +36,17 @@ func IndexHandler(r render.Render) {
 	r.HTML(200, "index", "")
 }
 
-func WebAddHandler(w http.ResponseWriter, r *http.Request) {
+func WebAddHandler(w http.ResponseWriter, r *http.Request, r2 render.Render) {
 	k := r.URL.Query()["url"][0]
 	if k == "" {
 		http.Redirect(w, r, "/", 302)
 	} else {
-		w.Write([]byte(k))
+		new, err := GetNewUrl(k)
+		if err != nil {
+			r2.HTML(500, "add", err.Error())
+		} else {
+			r2.HTML(200, "add", config.BaseURL+new.id)
+		}
 	}
 }
 
