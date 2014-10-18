@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/codegangsta/martini-contrib/render"
 	"github.com/garyburd/redigo/redis"
 	"github.com/go-martini/martini"
 	"log"
@@ -19,11 +20,20 @@ func main() {
 	}
 	pool = newPool()
 	m := martini.Classic()
+	m.Use(render.Renderer(render.Options{
+		Directory:  "templates",
+		Extensions: []string{".tmpl", ".html"},
+	}))
+	m.Get("/", IndexHandler)
 	m.Get("/api/add/**", ApiAddURLHandler)
 	m.Get("/add", WebAddHandler)
 	m.Get("/:id", GetURLAndRedirect)
 	log.Println("Listening on " + config.ListenAt)
 	log.Fatal(http.ListenAndServe(config.ListenAt, m))
+}
+
+func IndexHandler(r render.Render) {
+	r.HTML(200, "index", "")
 }
 
 func WebAddHandler(w http.ResponseWriter, r *http.Request) {
