@@ -13,6 +13,7 @@ var (
 
 func main() {
 	DB, err := redis.Dial("tcp", ":6379")
+	defer DB.Close()
 	if err != nil {
 		log.Fatal(err.Error())
 	} else {
@@ -21,7 +22,6 @@ func main() {
 	}
 	m := martini.Classic()
 	m.Get("/api/add/**", ApiAddURLHandler)
-	m.Get("/list", ListURLS)
 	m.Get("/:id", GetURLAndRedirect)
 	log.Println("Listening on " + listenstring)
 	log.Fatal(http.ListenAndServe(listenstring, m))
@@ -39,8 +39,4 @@ func GetURLAndRedirect(params martini.Params, w http.ResponseWriter, r *http.Req
 func ApiAddURLHandler(params martini.Params) string {
 	k := GetNewUrl(params["_1"])
 	return k.id
-}
-
-func ListURLS() string {
-	return fmt.Sprint(urlmap)
 }

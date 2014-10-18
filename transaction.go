@@ -7,8 +7,6 @@ import (
 
 var (
 	protected = []string{"list", "add", "api"}
-	urlmap    = make(map[string]string)
-	counter   int64
 )
 
 type Url struct {
@@ -17,31 +15,33 @@ type Url struct {
 }
 
 func GetUrlById(id string) *Url {
-	k := urlmap[strings.ToLower(id)]
+	k, _ := DB.Do("GET", strings.ToLower(id))
 	if k != "" {
 		resp := &Url{}
 		resp.id = id
-		resp.link = k
+		resp.link = k.(string)
 		return resp
 	} else {
 		return nil
 	}
-
 }
 
 func GetNewUrl(link string) *Url {
-	counter++
-	i := counter
+	i := GetNewCounter()
 	for _, k := range protected {
 		for strconv.FormatInt(i, 36) == k {
-			counter++
-			i = counter
+			i = GetNewCounter()
 		}
 	}
 	pos := strconv.FormatInt(i, 36)
-	urlmap[pos] = link
+	DB.Do("SET", pos, link)
 	new := &Url{}
 	new.id = pos
 	new.link = link
 	return new
+}
+
+func GetNewCounter() int64 {
+	n, _ := DB.Do("INCR", "COUNTER")
+	return n.(int64)
 }
