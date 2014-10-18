@@ -1,10 +1,10 @@
 package main
 
 import (
+	"github.com/garyburd/redigo/redis"
 	"strconv"
 	"strings"
 )
-import "github.com/garyburd/redigo/redis"
 
 var (
 	protected = []string{"list", "add", "api", "counter"}

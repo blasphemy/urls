@@ -1,10 +1,12 @@
 package main
 
-import "github.com/go-martini/martini"
-import "github.com/garyburd/redigo/redis"
-import "net/http"
-import "fmt"
-import "log"
+import (
+	"fmt"
+	"github.com/garyburd/redigo/redis"
+	"github.com/go-martini/martini"
+	"log"
+	"net/http"
+)
 
 var (
 	listenstring = ":5596"
