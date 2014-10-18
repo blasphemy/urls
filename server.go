@@ -7,6 +7,7 @@ import (
 	"github.com/go-martini/martini"
 	"log"
 	"net/http"
+	"strings"
 )
 
 var (
@@ -57,6 +58,9 @@ func GetURLAndRedirect(params martini.Params, w http.ResponseWriter, r *http.Req
 		return
 	}
 	if k != nil {
+		if strings.Contains(k.link, config.BaseURL) || k.link == / + k.id {
+			k.link = config.BaseURL
+		}
 		http.Redirect(w, r, k.link, http.StatusMovedPermanently)
 	} else {
 		http.Error(w, fmt.Sprintf("/%s not found", params["id"]), 404)
