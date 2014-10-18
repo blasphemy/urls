@@ -9,18 +9,21 @@ import (
 )
 
 var (
-	listenstring = ":5596"
-	pool         *redis.Pool
+	pool *redis.Pool
 )
 
 func main() {
+	err := MakeConfig()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 	pool = newPool()
 	m := martini.Classic()
 	m.Get("/api/add/**", ApiAddURLHandler)
 	m.Get("/add", WebAddHandler)
 	m.Get("/:id", GetURLAndRedirect)
-	log.Println("Listening on " + listenstring)
-	log.Fatal(http.ListenAndServe(listenstring, m))
+	log.Println("Listening on " + config.ListenAt)
+	log.Fatal(http.ListenAndServe(config.ListenAt, m))
 }
 
 func WebAddHandler(w http.ResponseWriter, r *http.Request) {
@@ -50,6 +53,6 @@ func ApiAddURLHandler(params martini.Params, w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 	} else {
-		w.Write([]byte(r.URL.Host + "/" + k.id))
+		w.Write([]byte(config.BaseURL + k.id))
 	}
 }

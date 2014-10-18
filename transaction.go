@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/garyburd/redigo/redis"
+	"log"
 	"strconv"
 	"strings"
 )
@@ -72,6 +73,16 @@ func GetNewCounter() (int64, error) {
 
 func newPool() *redis.Pool {
 	return redis.NewPool(func() (redis.Conn, error) {
-		return redis.Dial("tcp", ":6379")
+		conn, err := redis.Dial("tcp", config.DBAddress)
+		if err != nil {
+			return nil, err
+		}
+		_, err = conn.Do("AUTH", config.DBPassword)
+		if err != nil {
+			log.Print(err.Error())
+			return nil, err
+		}
+		return conn, nil
+
 	}, 3)
 }
