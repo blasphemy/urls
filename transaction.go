@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	protected = []string{"list", "add", "api", "counter"}
+	protected = []string{"list", "add", "api", "counter", "css", "img", "js"}
 )
 
 type Url struct {
