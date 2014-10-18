@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	protected = []string{"list", "add", "api"}
+	protected = []string{"list", "add", "api", "counter"}
 )
 
 type Url struct {
