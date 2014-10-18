@@ -1,3 +1,12 @@
+#testimonials {
+    background: #1f8dd6;
+    color: white;
+}
+
+#testimonials h2 {
+    color: white;
+}
+
 * {
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
