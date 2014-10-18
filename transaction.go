@@ -18,9 +18,9 @@ type Url struct {
 func GetUrlById(id string) *Url {
 	DB := pool.Get()
 	defer DB.Close()
-	k, err := DB.Do("GET", strings.ToLower(id))
+	k, err := DB.Do("GET", "url:"+strings.ToLower(id))
 	if k != "" {
-		DB.Do("INCR", id+":clicks")
+		DB.Do("INCR", "url:"+id+":clicks")
 		resp := &Url{}
 		resp.id = id
 		resp.link, _ = redis.String(k, err)
@@ -40,7 +40,7 @@ func GetNewUrl(link string) *Url {
 		}
 	}
 	pos := strconv.FormatInt(i, 36)
-	DB.Do("SET", pos, link)
+	DB.Do("SET", "url:"+pos, link)
 	new := &Url{}
 	new.id = pos
 	new.link = link
@@ -50,7 +50,7 @@ func GetNewUrl(link string) *Url {
 func GetNewCounter() int64 {
 	DB := pool.Get()
 	defer DB.Close()
-	n, _ := DB.Do("INCR", "COUNTER")
+	n, _ := DB.Do("INCR", "meta:COUNTER")
 	return n.(int64)
 }
 
