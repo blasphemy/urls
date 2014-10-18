@@ -21,7 +21,10 @@ func main() {
 }
 
 func GetURLAndRedirect(params martini.Params, w http.ResponseWriter, r *http.Request) {
-	k := GetUrlById(params["id"])
+	k, err := GetUrlById(params["id"])
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+	}
 	if k != nil {
 		http.Redirect(w, r, k.link, http.StatusMovedPermanently)
 	} else {
@@ -29,7 +32,11 @@ func GetURLAndRedirect(params martini.Params, w http.ResponseWriter, r *http.Req
 	}
 }
 
-func ApiAddURLHandler(params martini.Params) string {
-	k := GetNewUrl(params["_1"])
-	return k.id
+func ApiAddURLHandler(params martini.Params, w http.ResponseWriter, r *http.Request) {
+	k, err := GetNewUrl(params["_1"])
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+	} else {
+		w.Write([]byte(k.id))
+	}
 }

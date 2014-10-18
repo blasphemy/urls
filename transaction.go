@@ -15,44 +15,59 @@ type Url struct {
 	link string
 }
 
-func GetUrlById(id string) *Url {
+func GetUrlById(id string) (*Url, error) {
 	DB := pool.Get()
 	defer DB.Close()
 	id = strings.ToLower(strings.Split(id, ":")[0])
 	k, err := DB.Do("GET", "url:"+id)
+	if err != nil {
+		return nil, err
+	}
 	if k != "" {
 		DB.Do("INCR", "url:"+id+":clicks")
 		resp := &Url{}
 		resp.id = id
 		resp.link, _ = redis.String(k, err)
-		return resp
+		return resp, nil
 	} else {
-		return nil
+		return nil, nil
 	}
 }
 
-func GetNewUrl(link string) *Url {
+func GetNewUrl(link string) (*Url, error) {
 	DB := pool.Get()
 	defer DB.Close()
-	i := GetNewCounter()
+	i, err := GetNewCounter()
+	if err != nil {
+		return nil, err
+	}
 	for _, k := range protected {
 		for strconv.FormatInt(i, 36) == k {
-			i = GetNewCounter()
+			i, err = GetNewCounter()
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	pos := strconv.FormatInt(i, 36)
-	DB.Do("SET", "url:"+pos, link)
+	_, err = DB.Do("SET", "url:"+pos, link)
+	if err != nil {
+		return nil, err
+	}
 	new := &Url{}
 	new.id = pos
 	new.link = link
-	return new
+	return new, nil
 }
 
-func GetNewCounter() int64 {
+func GetNewCounter() (int64, error) {
 	DB := pool.Get()
 	defer DB.Close()
-	n, _ := DB.Do("INCR", "meta:COUNTER")
-	return n.(int64)
+	n, err := DB.Do("INCR", "meta:COUNTER")
+	if err != nil {
+		return 0, err
+	}
+	return n.(int64), nil
 }
 
 func newPool() *redis.Pool {
