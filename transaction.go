@@ -20,6 +20,7 @@ func GetUrlById(id string) *Url {
 	defer DB.Close()
 	k, err := DB.Do("GET", strings.ToLower(id))
 	if k != "" {
+		DB.Do("INCR", id+":clicks")
 		resp := &Url{}
 		resp.id = id
 		resp.link, _ = redis.String(k, err)
