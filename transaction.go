@@ -18,7 +18,7 @@ type Url struct {
 func GetUrlById(id string) *Url {
 	DB := pool.Get()
 	defer DB.Close()
-	k, err := DB.Do("GET", "url:"+strings.ToLower(id))
+	k, err := DB.Do("GET", "url:"+strings.ToLower(strings.Split(id, ":")[0]))
 	if k != "" {
 		DB.Do("INCR", "url:"+id+":clicks")
 		resp := &Url{}
