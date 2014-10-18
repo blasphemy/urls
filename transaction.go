@@ -18,11 +18,11 @@ type Url struct {
 func GetUrlById(id string) *Url {
 	DB := pool.Get()
 	defer DB.Close()
-	k, _ := DB.Do("GET", strings.ToLower(id))
+	k, err := DB.Do("GET", strings.ToLower(id))
 	if k != "" {
 		resp := &Url{}
 		resp.id = id
-		resp.link = k.(string)
+		resp.link, _ = redis.String(k, err)
 		return resp
 	} else {
 		return nil
