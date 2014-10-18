@@ -1,15 +1,24 @@
 package main
 
 import "github.com/go-martini/martini"
+import "github.com/garyburd/redigo/redis"
 import "net/http"
 import "fmt"
 import "log"
 
 var (
 	listenstring = ":5596"
+	DB           redis.Conn
 )
 
 func main() {
+	DB, err := redis.Dial("tcp", ":6379")
+	if err != nil {
+		log.Fatal(err.Error())
+	} else {
+		k, _ := DB.Do("GET", "TEST")
+		log.Print(k)
+	}
 	m := martini.Classic()
 	m.Get("/api/add/**", ApiAddURLHandler)
 	m.Get("/list", ListURLS)
