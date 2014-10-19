@@ -1,106 +1,23 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="The most useless url shortener in the world">
-  <title>urls</title>
-  <link rel="stylesheet" href="css/pure/pure.css">
-<!--[if lte IE 8]>
-    <link rel="stylesheet" href="http://yui.yahooapis.com/pure//grids-responsive-old-ie.css">
-    <![endif]-->
-    <!--[if gt IE 8]><!-->
-    <link rel="stylesheet" href="css/pure/grids-responsive.css">
-    <!--<![endif]-->
-    <!--[if lte IE 8]>
-        <link rel="stylesheet" href="css/layouts/marketing-old-ie.css">
-        <![endif]-->
-        <!--[if gt IE 8]><!-->
-        <link rel="stylesheet" href="css/layouts/marketing.css">
-        <!--<![endif]-->
-        <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
-      </head>
-      <body>
-        <div class="header">
-          <div class="home-menu pure-menu pure-menu-open pure-menu-horizontal pure-menu-fixed">
-            <a class="pure-menu-heading" href="">urls</a>
-          </div>
-        </div>
-        <div class="splash-container">
-          <div class="splash">
-            <p class="splash-subhead caps">The most useless url shortener</p>
-            <h1 class="splash-head caps">in the world</h1>
-            <p>
-              <a href="#submit" class="pure-button pure-button-primary caps">Get Started</a>
-            </p>
-          </div>
-        </div>
-        <div class="content-wrapper" id="submit">
-          <div class="content">
-            <h2 class="content-subhead is-center">
-              <i class="fa fa-rocket"></i>
-              #WEBSCALE YOUR URL NOW
-            </h2>
-            <div class="pure-g">
-              <form class="pure-form pure-u-1 pure-md-1-2" action="add" method="get">
-                <fieldset is-center>
-                  <input name="url" class="pure-input-1" type="text"><br />
-                </fieldset>
-                <button type="submit" class="pure-button pure-button-primary is-center">Submit</button>
-              </form>
-            </div>
-          </div>
-          <div class="ribbon l-box-lrg pure-g">
-            <div class="l-box-lrg is-center pure-u-1 pure-u-md-1-2 pure-u-lg-2-5">
-              <img class="pure-img-responsive" alt="File Icons" width="300" src="img/common/file-icons.png">
-            </div>
-            <div class="pure-u-1 pure-u-md-1-2 pure-u-lg-3-5">
-              <h2 class="content-head content-head-ribbon">#WEBSCALE</h2>
-              <p>
-                This site utilizes the latest #WEBSCALE cloud technologies, such as Node.js, javascript, MongoDB, javascript, cloud, javascript, synergy, javascript, big data, and javascript. #WEBSCALE your cloud urls with confidence.
-              </p>
-            </div>
-          </div>
-          <div class= "content" id="testimonials">
-            <h2 class="content-head is-center">Testimonials</h2>
-            <div class="pure-g">
-              <div class="1-box-lrg pure-u-1 pure-u-md-1-4">
-                "Redis will kick memcache's ass. It's so fast and scalable."
-              </div>
-              <div class="1-box-lrg pure-u-1 pure-u-md-1-4">
-                "MongoDB is a document database that doesn't need JOINs. It uses map/reduce."
-              </div>
-              <div class="1-box-lrg pure-u-1 pure-u-md-1-4">
-                "If /dev/null is fast in web scale I will use it. Is it web scale?"
-                <br />
-                "Does /dev/null support sharding?"
-              </div>
-              <div class="1-box-lrg pure-u-1 pure-u-md-1-4">
-                "MongoDB is a web scale database, and doesn't use SQL or JOINs, so it's high-performance."
-              </div>
-              <div class="1-box-lrg pure-u-1 pure-u-md-1-4">
-                "MongoDB stores files of any size without complicating your stack."
-              </div>
-            </div>
-          </div>
-          <div class="content">
-            <h2 class="content-head is-center">More</h2>
-            <div class="pure-g">
-              <div class="l-box-lrg pure-u-1 pure-u-md-3-5">
-                <h4>Contact Us</h4>
-                <p>
-                  Email <a href="mailto:daniel@the-beach.co">daniel@the-beach.co</a>
-                </p>
-                <h4>More Information</h4>
-                <p>
-                  <a href="https://github.com/blasphemy/urls">Source</a>
-                </p>
-              </div>
-            </div>
-          </div>
-          <div class="footer l-box is-center">
-            YOUR RELATIONAL DATABASE WILL NEVER BE AS #WEBSCALE AS MONGODB. RELATIONAL DATABASE ARE SLOW BECAUSE JOINS.
-          </div>
-        </div>
-      </body>
-      </html>
+{{template "head" .}}
+<body>
+ {{template "header" .}}
+ <div class="splash-container">
+  <div class="splash">
+    <p class="splash-subhead caps">The most useless url shortener</p>
+    <h1 class="splash-head caps">in the world</h1>
+    <p>
+      <a href="#submit" class="pure-button pure-button-primary caps">Get Started</a>
+    </p>
+  </div>
+</div>
+<div class="content-wrapper">
+{{template "submit" .}}
+{{template "webscale" .}}
+{{template "testimonials" .}}
+{{template "more" .}}
+{{template "footer" .}}
+</div>
+</body>
+</html>
