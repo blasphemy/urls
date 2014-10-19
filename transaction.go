@@ -19,12 +19,12 @@ func GetUrlById(id string) (*Url, error) {
 	DB := pool.Get()
 	defer DB.Close()
 	id = strings.Split(id, ":")[0]
-	k, err := DB.Do("GET", "url:"+id)
+	k, err := DB.Do("GET", "url:link:"+id)
 	if err != nil {
 		return nil, err
 	}
 	if k != "" {
-		DB.Do("INCR", "url:"+id+":clicks")
+		DB.Do("INCR", "url:clicks:"+id)
 		resp := &Url{}
 		resp.id = id
 		resp.link, _ = redis.String(k, err)
@@ -50,8 +50,8 @@ func GetNewUrl(link string) (*Url, error) {
 		}
 	}
 	pos := b62_Encode(uint64(i))
-	_, err = DB.Do("SET", "url:"+pos, link)
-	_, err = DB.Do("SET", "url:"+pos+":clicks", 0)
+	_, err = DB.Do("SET", "url:link:"+pos, link)
+	_, err = DB.Do("SET", "url:clicks:"+pos, 0)
 	if err != nil {
 		return nil, err
 	}
