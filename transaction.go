@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/garyburd/redigo/redis"
 	"log"
-	"strconv"
 	"strings"
 )
 
@@ -19,7 +18,7 @@ type Url struct {
 func GetUrlById(id string) (*Url, error) {
 	DB := pool.Get()
 	defer DB.Close()
-	id = strings.ToLower(strings.Split(id, ":")[0])
+	id = strings.Split(id, ":")[0]
 	k, err := DB.Do("GET", "url:"+id)
 	if err != nil {
 		return nil, err
@@ -43,14 +42,14 @@ func GetNewUrl(link string) (*Url, error) {
 		return nil, err
 	}
 	for _, k := range protected {
-		for strconv.FormatInt(i, 36) == k {
+		for b62_Encode(uint64(i)) == k {
 			i, err = GetNewCounter()
 			if err != nil {
 				return nil, err
 			}
 		}
 	}
-	pos := strconv.FormatInt(i, 36)
+	pos := b62_Encode(uint64(i))
 	_, err = DB.Do("SET", "url:"+pos, link)
 	_, err = DB.Do("SET", "url:"+pos+":clicks", 0)
 	if err != nil {
