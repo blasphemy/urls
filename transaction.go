@@ -52,6 +52,7 @@ func GetNewUrl(link string) (*Url, error) {
 	}
 	pos := strconv.FormatInt(i, 36)
 	_, err = DB.Do("SET", "url:"+pos, link)
+	_, err = DB.Do("SET", "url:"+pos+":clicks", 0)
 	if err != nil {
 		return nil, err
 	}
