@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/codegangsta/martini-contrib/render"
 	"github.com/garyburd/redigo/redis"
 	"github.com/go-martini/martini"
+	"github.com/martini-contrib/render"
 	"log"
 	"net/http"
 	"strings"
