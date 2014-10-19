@@ -48,7 +48,7 @@ func WebAddHandler(w http.ResponseWriter, r *http.Request, r2 render.Render) {
 	} else {
 		new, err := GetNewUrl(k)
 		if err != nil {
-			r2.HTML(500, "add", err.Error())
+			r2.HTML(500, "error", err.Error())
 		} else {
 			r2.HTML(200, "add", config.BaseURL+new.id)
 		}
