@@ -1,23 +1,27 @@
 <!doctype html>
 <html lang="en">
-  {{template "head" .}}
-  <body>
-    {{template "header" .}}
-    <div class="splash-container">
-      <div class="splash">
-        <p class="splash-subhead caps">Your link is:</p>
-        <h1 class="splash-head">{{ . }}</h1>
-        <p>
-          <a href="#submit" class="pure-button pure-button-primary caps">Do Another</a>
-        </p>
+{{template "head" .}}
+<body>
+  {{template "header" .}}
+  <div class="splash-container">
+    <div class="splash">
+      <p class="splash-subhead caps">Your link is:</p>
+      <div class="pure-u-1 pure-md-1-4">
+        <form class="pure-form">
+        <input class="is-center" type="text" value="{{.}}" readonly>
+        </form>
       </div>
+      <p>
+        <a href="#submit" class="pure-button pure-button-primary caps">Do Another</a>
+      </p>
     </div>
-    <div class="content-wrapper">
-      {{template "submit" .}}
-      {{template "webscale" .}}
-      {{template "testimonials" .}}
-      {{template "more" .}}
-      {{template "footer" .}}
-    </div>
-  </body>
+  </div>
+  <div class="content-wrapper">
+    {{template "submit" .}}
+    {{template "webscale" .}}
+    {{template "testimonials" .}}
+    {{template "more" .}}
+    {{template "footer" .}}
+  </div>
+</body>
 </html>
