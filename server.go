@@ -38,6 +38,10 @@ func IndexHandler(r render.Render) {
 }
 
 func WebAddHandler(w http.ResponseWriter, r *http.Request, r2 render.Render) {
+	if len(r.URL.Query()["url"]) < 1 {
+		r2.HTML(500, "error", "No arguments specified.")
+		return
+	}
 	k := r.URL.Query()["url"][0]
 	if k == "" {
 		http.Redirect(w, r, "/", 302)
