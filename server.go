@@ -58,7 +58,7 @@ func GetURLAndRedirect(params martini.Params, w http.ResponseWriter, r *http.Req
 		return
 	}
 	if k != nil {
-		if strings.Contains(k.link, config.BaseURL) || k.link == "/"+k.id {
+		if strings.Contains(k.link, config.BaseURL) || strings.Split(k.link, ":")[0] == "/"+k.id {
 			k.link = config.BaseURL
 		}
 		http.Redirect(w, r, k.link, http.StatusMovedPermanently)
