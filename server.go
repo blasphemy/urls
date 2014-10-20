@@ -30,7 +30,10 @@ func main() {
 	m.Get("/view/:id", ViewHandler)
 	m.Get("/:id", GetURLAndRedirect)
 	log.Println("Listening on " + config.ListenAt)
-	go RunJobs()
+	if config.RunJobs {
+		log.Print("Running jobs every: ", config.GetJobInvertal())
+		go RunJobs()
+	}
 	log.Fatal(http.ListenAndServe(config.ListenAt, m))
 }
 

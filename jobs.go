@@ -7,7 +7,7 @@ import (
 
 func RunJobs() {
 	for {
-		time.Sleep(time.Minute * 10)
+		time.Sleep(config.GetJobInvertal())
 		log.Print("Running Jobs")
 		log.Print("Running Total Links Update")
 		t := time.Now()
