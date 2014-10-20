@@ -121,6 +121,7 @@ func GetTotalUrlsFromKeys() (int, error) {
 }
 
 func SetTotalUrls() {
+	log.Print("Setting total number of urls in DB....")
 	i, err := GetTotalUrlsFromKeys()
 	if err != nil {
 		log.Print("Error updating total urls", err.Error())
