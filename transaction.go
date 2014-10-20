@@ -11,9 +11,10 @@ var (
 )
 
 type Url struct {
-	id    string
-	Link  string
-	Short string
+	id     string
+	Link   string
+	Short  string
+	Clicks int64
 }
 
 func GetUrlById(id string) (*Url, error) {
@@ -28,11 +29,12 @@ func GetUrlById(id string) (*Url, error) {
 	case nil:
 		return nil, nil
 	default:
-		DB.Do("INCR", "url:clicks:"+id)
+		c, _ := DB.Do("INCR", "url:clicks:"+id)
 		resp := &Url{}
 		resp.id = id
 		resp.Short = config.BaseURL + id
 		resp.Link, _ = redis.String(k, err)
+		resp.Clicks = c.(int64)
 		return resp, nil
 	}
 }
