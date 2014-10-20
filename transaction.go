@@ -134,4 +134,5 @@ func SetTotalUrls() {
 		log.Print("Error updating total urls", err.Error())
 		return
 	}
+	log.Printf("Total number of URLS set to %d", i)
 }
