@@ -91,3 +91,46 @@ func newPool() *redis.Pool {
 
 	}, 3)
 }
+
+func GetTotalUrls() (int, error) {
+	db := pool.Get()
+	defer db.Close()
+	k, err := db.Do("GET", "meta:total:links")
+	if err != nil {
+		return 0, err
+	}
+	l, err := redis.Int(k, err)
+	if err != nil {
+		return 0, err
+	}
+	return l, err
+}
+
+func GetTotalUrlsFromKeys() (int, error) {
+	DB := pool.Get()
+	defer DB.Close()
+	k, err := DB.Do("KEYS", "url:link:*")
+	if err != nil {
+		return 0, err
+	}
+	l, err := redis.Strings(k, err)
+	if err != nil {
+		return 0, err
+	}
+	return len(l), nil
+}
+
+func SetTotalUrls() {
+	i, err := GetTotalUrlsFromKeys()
+	if err != nil {
+		log.Print("Error updating total urls", err.Error())
+		return
+	}
+	DB := pool.Get()
+	defer DB.Close()
+	_, err = DB.Do("SET", "meta:total:links", i)
+	if err != nil {
+		log.Print("Error updating total urls", err.Error())
+		return
+	}
+}
