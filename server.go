@@ -2,8 +2,7 @@ package main
 
 import (
 	"github.com/garyburd/redigo/redis"
-	"github.com/go-martini/martini"
-	"github.com/martini-contrib/render"
+	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"strings"
@@ -19,78 +18,77 @@ func main() {
 		log.Fatal(err.Error())
 	}
 	pool = newPool()
-	m := martini.Classic()
-	m.Use(render.Renderer(render.Options{
-		Directory:  "templates",
-		Extensions: []string{".tmpl", ".html"},
-	}))
-	m.Get("/", IndexHandler)
-	m.Get("/api/add/**", ApiAddURLHandler)
-	m.Get("/add", WebAddHandler)
-	m.Get("/view/:id", ViewHandler)
-	m.Get("/:id", GetURLAndRedirect)
+	router := gin.Default()
+	router.LoadHTMLTemplates("templates/*")
+	router.GET("/*params", MyCustomRouter)
+	router.GET("/", IndexHandler)
+	router.GET("/add/", WebAddHandler)
+	router.GET("/view/:id/", ViewHandler)
+	router.GET("/:id/", GetURLAndRedirect)
+	router.GET("/api/add/*url", ApiAddURLHandler)
 	log.Println("Listening on " + config.ListenAt)
-	log.Fatal(http.ListenAndServe(config.ListenAt, m))
+	log.Fatal(http.ListenAndServe(config.ListenAt, router))
 }
 
-func IndexHandler(r render.Render) {
-	r.HTML(http.StatusOK, "index", "")
+func IndexHandler(c *gin.Context) {
+	log.Println(c.Params)
+	c.HTML(http.StatusOK, "index", "")
 }
 
-func ViewHandler(m martini.Params, w http.ResponseWriter, r *http.Request, r2 render.Render) {
-	k, err := GetUrlById(m["id"])
+func ViewHandler(c *gin.Context) {
+	k, err := GetUrlById(c.Params.ByName("id"))
 	if err != nil {
-		r2.HTML(http.StatusInternalServerError, "error", err.Error())
+		c.HTML(http.StatusInternalServerError, "error", err.Error())
 		return
 	}
 	if k != nil {
-		r2.HTML(http.StatusOK, "view", k)
+		c.HTML(http.StatusOK, "view", k)
 		return
 	} else {
-		r2.HTML(http.StatusNotFound, "error", "404 Not Found")
+		c.HTML(http.StatusNotFound, "error", "404 Not Found")
 		return
 	}
 }
 
-func WebAddHandler(w http.ResponseWriter, r *http.Request, r2 render.Render) {
-	if len(r.URL.Query()["url"]) < 1 {
-		r2.HTML(500, "error", "No arguments specified.")
+func WebAddHandler(c *gin.Context) {
+	if len(c.Request.URL.Query()["url"]) < 1 {
+		c.HTML(500, "error", "No arguments specified.")
 		return
 	}
-	k := r.URL.Query()["url"][0]
+	k := c.Request.URL.Query()["url"][0]
 	if k == "" {
-		http.Redirect(w, r, "/", http.StatusMovedPermanently)
+		c.Redirect(http.StatusMovedPermanently, "/")
 	} else {
 		new, err := GetNewUrl(k)
 		if err != nil {
-			r2.HTML(500, "error", err.Error())
+			c.HTML(500, "error", err.Error())
 		} else {
-			http.Redirect(w, r, "/view/"+new.id, http.StatusMovedPermanently)
+			c.Redirect(http.StatusMovedPermanently, "/view/"+new.id)
 		}
 	}
 }
 
-func GetURLAndRedirect(params martini.Params, w http.ResponseWriter, r *http.Request, r2 render.Render) {
-	k, err := GetUrlById(params["id"])
+func GetURLAndRedirect(c *gin.Context) {
+	k, err := GetUrlById(c.Params.ByName("id"))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.HTML(http.StatusInternalServerError, "error", err.Error())
 		return
 	}
 	if k != nil {
 		if strings.Contains(k.Link, config.BaseURL) || strings.Split(k.Link, ":")[0] == "/"+k.id {
 			k.Link = config.BaseURL
 		}
-		http.Redirect(w, r, k.Link, http.StatusMovedPermanently)
+		c.Redirect(http.StatusMovedPermanently, k.Link)
 	} else {
-		r2.HTML(http.StatusNotFound, "error", "404 Not Found")
+		c.HTML(http.StatusNotFound, "error", "404 Not Found")
 	}
 }
 
-func ApiAddURLHandler(params martini.Params, w http.ResponseWriter, r *http.Request) {
-	k, err := GetNewUrl(params["_1"])
+func ApiAddURLHandler(c *gin.Context) {
+	k, err := GetNewUrl(c.Params.ByName("url"))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.Fail(http.StatusInternalServerError, err)
 	} else {
-		w.Write([]byte(config.BaseURL + k.id))
+		c.Writer.Write([]byte(config.BaseURL + k.id))
 	}
 }
