@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"log"
 	"strings"
@@ -119,6 +118,20 @@ func GetTotalUrlsFromKeys() (int, error) {
 		return 0, err
 	}
 	return len(l), nil
+}
+
+func GetTotalClicks() (int, error) {
+	DB := pool.Get()
+	defer DB.Close()
+	k, err := DB.Do("GET", "meta:total:clicks")
+	if err != nil {
+		return 0, nil
+	}
+	j, err := redis.Int(k, err)
+	if err != nil {
+		return 0, nil
+	}
+	return j, nil
 }
 
 func GetTotalClicksFromKeys() (int, error) {
