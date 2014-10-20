@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/render"
@@ -28,13 +27,29 @@ func main() {
 	m.Get("/", IndexHandler)
 	m.Get("/api/add/**", ApiAddURLHandler)
 	m.Get("/add", WebAddHandler)
+	m.Get("/view/:id", ViewHandler)
 	m.Get("/:id", GetURLAndRedirect)
 	log.Println("Listening on " + config.ListenAt)
 	log.Fatal(http.ListenAndServe(config.ListenAt, m))
 }
 
 func IndexHandler(r render.Render) {
-	r.HTML(200, "index", "")
+	r.HTML(http.StatusOK, "index", "")
+}
+
+func ViewHandler(m martini.Params, w http.ResponseWriter, r *http.Request, r2 render.Render) {
+	k, err := GetUrlById(m["id"])
+	if err != nil {
+		r2.HTML(http.StatusInternalServerError, "error", err.Error())
+		return
+	}
+	if k != nil {
+		r2.HTML(http.StatusOK, "view", k)
+		return
+	} else {
+		r2.HTML(http.StatusNotFound, "error", "404 Not Found")
+		return
+	}
 }
 
 func WebAddHandler(w http.ResponseWriter, r *http.Request, r2 render.Render) {
@@ -44,37 +59,37 @@ func WebAddHandler(w http.ResponseWriter, r *http.Request, r2 render.Render) {
 	}
 	k := r.URL.Query()["url"][0]
 	if k == "" {
-		http.Redirect(w, r, "/", 302)
+		http.Redirect(w, r, "/", http.StatusMovedPermanently)
 	} else {
 		new, err := GetNewUrl(k)
 		if err != nil {
 			r2.HTML(500, "error", err.Error())
 		} else {
-			r2.HTML(200, "add", config.BaseURL+new.id)
+			http.Redirect(w, r, "/view/"+new.id, http.StatusMovedPermanently)
 		}
 	}
 }
 
-func GetURLAndRedirect(params martini.Params, w http.ResponseWriter, r *http.Request) {
+func GetURLAndRedirect(params martini.Params, w http.ResponseWriter, r *http.Request, r2 render.Render) {
 	k, err := GetUrlById(params["id"])
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if k != nil {
-		if strings.Contains(k.link, config.BaseURL) || strings.Split(k.link, ":")[0] == "/"+k.id {
-			k.link = config.BaseURL
+		if strings.Contains(k.Link, config.BaseURL) || strings.Split(k.Link, ":")[0] == "/"+k.id {
+			k.Link = config.BaseURL
 		}
-		http.Redirect(w, r, k.link, http.StatusMovedPermanently)
+		http.Redirect(w, r, k.Link, http.StatusMovedPermanently)
 	} else {
-		http.Error(w, fmt.Sprintf("/%s not found", params["id"]), 404)
+		r2.HTML(http.StatusNotFound, "error", "404 Not Found")
 	}
 }
 
 func ApiAddURLHandler(params martini.Params, w http.ResponseWriter, r *http.Request) {
 	k, err := GetNewUrl(params["_1"])
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
 		w.Write([]byte(config.BaseURL + k.id))
 	}

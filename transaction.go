@@ -11,8 +11,9 @@ var (
 )
 
 type Url struct {
-	id   string
-	link string
+	id    string
+	Link  string
+	Short string
 }
 
 func GetUrlById(id string) (*Url, error) {
@@ -23,14 +24,16 @@ func GetUrlById(id string) (*Url, error) {
 	if err != nil {
 		return nil, err
 	}
-	if k != "" {
+	switch k.(type) {
+	case nil:
+		return nil, nil
+	default:
 		DB.Do("INCR", "url:clicks:"+id)
 		resp := &Url{}
 		resp.id = id
-		resp.link, _ = redis.String(k, err)
+		resp.Short = config.BaseURL + id
+		resp.Link, _ = redis.String(k, err)
 		return resp, nil
-	} else {
-		return nil, nil
 	}
 }
 
@@ -57,7 +60,7 @@ func GetNewUrl(link string) (*Url, error) {
 	}
 	new := &Url{}
 	new.id = pos
-	new.link = link
+	new.Link = link
 	return new, nil
 }
 
