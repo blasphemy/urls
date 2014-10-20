@@ -8,13 +8,13 @@
       <p class="splash-subhead caps">Your link is:</p>
       <div class="pure-u-1 pure-md-1-4">
         <form class="pure-form">
-          <input class="is-center" type="text" value="{{.Short}}" onClick="this.setSelectionRange(0, this.value.length)" readonly>
+          <input class="is-center" type="text" value="{{.CurrentUrl.Short}}" onClick="this.setSelectionRange(0, this.value.length)" readonly>
         </form>
       </div>
       <p class="splash-subhead caps">And it goes to:</p>
       <div class="pure-u-1 pure-md-1-4">
         <form class="pure-form">
-          <input class="is-center" type="text" value="{{.Link}}" onClick="this.setSelectionRange(0, this.value.length)" readonly>
+          <input class="is-center" type="text" value="{{.CurrentUrl.Link}}" onClick="this.setSelectionRange(0, this.value.length)" readonly>
         </form>
       </div>
       <p class="splash-subhead caps">This link has been viewed or clicked {{.Clicks}} time(s).</p>

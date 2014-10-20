@@ -13,6 +13,14 @@
       <p>
         <a href="http://www.mongodb-is-web-scale.com">MongoDB</a>
       </p>
+      {{ if .Stats }}
+      <h4>Stats</h4>
+      <p>
+        Over {{ .Stats.Links }} urls shortened
+        <br />
+        Over {{ .Stats.Clicks }} clicks
+      </p>
+      {{end}}
     </div>
   </div>
 </div>

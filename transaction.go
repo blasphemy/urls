@@ -17,6 +17,11 @@ type Url struct {
 	Clicks int64
 }
 
+type SiteStats struct {
+	Clicks int
+	Links  int
+}
+
 func GetUrlById(id string) (*Url, error) {
 	DB := pool.Get()
 	defer DB.Close()
@@ -74,6 +79,15 @@ func GetNewCounter() (int64, error) {
 		return 0, err
 	}
 	return n.(int64), nil
+}
+
+func GetSiteStats() SiteStats {
+	k := SiteStats{}
+	a, _ := GetTotalClicks()
+	b, _ := GetTotalUrls()
+	k.Clicks = a
+	k.Links = b
+	return k
 }
 
 func newPool() *redis.Pool {

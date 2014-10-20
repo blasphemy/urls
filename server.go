@@ -13,6 +13,18 @@ var (
 	pool *redis.Pool
 )
 
+type PageData struct {
+	CurrentUrl *Url
+	Stats      SiteStats
+	Message    string
+}
+
+func GetNewPageData() PageData {
+	k := PageData{}
+	k.Stats = GetSiteStats()
+	return k
+}
+
 func main() {
 	err := MakeConfig()
 	if err != nil {
@@ -38,27 +50,36 @@ func main() {
 }
 
 func IndexHandler(r render.Render) {
-	r.HTML(http.StatusOK, "index", "")
+	pd := GetNewPageData()
+	r.HTML(http.StatusOK, "index", pd)
 }
 
 func ViewHandler(m martini.Params, w http.ResponseWriter, r *http.Request, r2 render.Render) {
 	k, err := GetUrlById(m["id"])
 	if err != nil {
-		r2.HTML(http.StatusInternalServerError, "error", err.Error())
+		pd := GetNewPageData()
+		pd.Message = err.Error()
+		r2.HTML(http.StatusInternalServerError, "error", pd)
 		return
 	}
 	if k != nil {
-		r2.HTML(http.StatusOK, "view", k)
+		pd := GetNewPageData()
+		pd.CurrentUrl = k
+		r2.HTML(http.StatusOK, "view", pd)
 		return
 	} else {
-		r2.HTML(http.StatusNotFound, "error", "404 Not Found")
+		pd := GetNewPageData()
+		pd.Message = "404 Not Found"
+		r2.HTML(http.StatusNotFound, "error", pd)
 		return
 	}
 }
 
 func WebAddHandler(w http.ResponseWriter, r *http.Request, r2 render.Render) {
 	if len(r.URL.Query()["url"]) < 1 {
-		r2.HTML(500, "error", "No arguments specified.")
+		pd := GetNewPageData()
+		pd.Message = "No arguments specified."
+		r2.HTML(500, "error", pd)
 		return
 	}
 	k := r.URL.Query()["url"][0]
@@ -67,7 +88,9 @@ func WebAddHandler(w http.ResponseWriter, r *http.Request, r2 render.Render) {
 	} else {
 		new, err := GetNewUrl(k)
 		if err != nil {
-			r2.HTML(500, "error", err.Error())
+			pd := GetNewPageData()
+			pd.Message = err.Error()
+			r2.HTML(500, "error", pd)
 		} else {
 			http.Redirect(w, r, "/view/"+new.id, http.StatusMovedPermanently)
 		}
@@ -86,7 +109,9 @@ func GetURLAndRedirect(params martini.Params, w http.ResponseWriter, r *http.Req
 		}
 		http.Redirect(w, r, k.Link, http.StatusMovedPermanently)
 	} else {
-		r2.HTML(http.StatusNotFound, "error", "404 Not Found")
+		pd := GetNewPageData()
+		pd.Message = "404 Not Found"
+		r2.HTML(http.StatusNotFound, "error", pd)
 	}
 }
 
