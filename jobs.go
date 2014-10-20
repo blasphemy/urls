@@ -7,7 +7,6 @@ import (
 
 func RunJobs() {
 	for {
-		time.Sleep(config.GetJobInvertal())
 		log.Print("Running Jobs")
 		log.Print("Running Total Links Update")
 		t := time.Now()
@@ -19,5 +18,6 @@ func RunJobs() {
 		SetTotalClicks()
 		t2 = time.Since(t)
 		log.Print("Total clicks update complete,  took: ", t2)
+		time.Sleep(config.GetJobInvertal())
 	}
 }
