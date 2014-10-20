@@ -133,37 +133,3 @@ func GetTotalClicks() (int, error) {
 	}
 	return j, nil
 }
-
-func SetTotalClicks() {
-	log.Print("Setting total number of clicks in DB...")
-	i, err := GetTotalClicksFromScript()
-	if err != nil {
-		log.Print("error updating total clicks in db.... ", err.Error())
-		return
-	}
-	DB := pool.Get()
-	defer DB.Close()
-	_, err = DB.Do("SET", "meta:total:clicks", i)
-	if err != nil {
-		log.Print("error updating total clicks in db.... ", err.Error())
-		return
-	}
-	log.Printf("Total number of clicks set to %d", i)
-}
-
-func SetTotalUrls() {
-	log.Print("Setting total number of urls in DB....")
-	i, err := GetTotalUrlsFromScript()
-	if err != nil {
-		log.Print("Error updating total urls", err.Error())
-		return
-	}
-	DB := pool.Get()
-	defer DB.Close()
-	_, err = DB.Do("SET", "meta:total:links", i)
-	if err != nil {
-		log.Print("Error updating total urls", err.Error())
-		return
-	}
-	log.Printf("Total number of URLS set to %d", i)
-}
