@@ -148,32 +148,9 @@ func GetTotalClicks() (int, error) {
 	return j, nil
 }
 
-func GetTotalClicksFromKeys() (int, error) {
-	DB := pool.Get()
-	defer DB.Close()
-	k, err := DB.Do("KEYS", "url:clicks:*")
-	if err != nil {
-		return 0, err
-	}
-	count := 0
-	l, err := redis.Strings(k, err)
-	for _, j := range l {
-		a, err := DB.Do("GET", j)
-		if err != nil {
-			return 0, err
-		}
-		b, err := redis.Int(a, err)
-		if err != nil {
-			return 0, err
-		}
-		count += b
-	}
-	return count, nil
-}
-
 func SetTotalClicks() {
 	log.Print("Setting total number of clicks in DB...")
-	i, err := GetTotalClicksFromKeys()
+	i, err := GetTotalClicksFromScript()
 	if err != nil {
 		log.Print("error updating total clicks in db.... ", err.Error())
 		return
