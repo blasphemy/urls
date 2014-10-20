@@ -120,20 +120,6 @@ func GetTotalUrls() (int, error) {
 	return l, err
 }
 
-func GetTotalUrlsFromKeys() (int, error) {
-	DB := pool.Get()
-	defer DB.Close()
-	k, err := DB.Do("KEYS", "url:link:*")
-	if err != nil {
-		return 0, err
-	}
-	l, err := redis.Strings(k, err)
-	if err != nil {
-		return 0, err
-	}
-	return len(l), nil
-}
-
 func GetTotalClicks() (int, error) {
 	DB := pool.Get()
 	defer DB.Close()
@@ -167,7 +153,7 @@ func SetTotalClicks() {
 
 func SetTotalUrls() {
 	log.Print("Setting total number of urls in DB....")
-	i, err := GetTotalUrlsFromKeys()
+	i, err := GetTotalUrlsFromScript()
 	if err != nil {
 		log.Print("Error updating total urls", err.Error())
 		return

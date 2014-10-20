@@ -15,12 +15,28 @@ for _,key in ipairs(matches) do
 end
 
 return sum`
+
+	redis_lua_get_link_count = `return table.getn(redis.call('keys', 'url:link:*'))`
 )
 
 func GetTotalClicksFromScript() (int, error) {
 	db := pool.Get()
 	defer db.Close()
 	i, err := db.Do("EVAL", redis_lua_get_click_sum, 0)
+	if err != nil {
+		return 0, nil
+	}
+	k, err := redis.Int(i, err)
+	if err != nil {
+		return 0, err
+	}
+	return k, nil
+}
+
+func GetTotalUrlsFromScript() (int, error) {
+	db := pool.Get()
+	defer db.Close()
+	i, err := db.Do("EVAL", redis_lua_get_link_count, 0)
 	if err != nil {
 		return 0, nil
 	}
