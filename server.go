@@ -86,6 +86,7 @@ func WebAddHandler(w http.ResponseWriter, r *http.Request, r2 render.Render) {
 	if k == "" {
 		http.Redirect(w, r, "/", http.StatusMovedPermanently)
 	} else {
+		k = UrlPreprocessor(k)
 		new, err := GetNewUrl(k)
 		if err != nil {
 			pd := GetNewPageData()
@@ -116,10 +117,18 @@ func GetURLAndRedirect(params martini.Params, w http.ResponseWriter, r *http.Req
 }
 
 func ApiAddURLHandler(params martini.Params, w http.ResponseWriter, r *http.Request) {
-	k, err := GetNewUrl(params["_1"])
+	a := UrlPreprocessor(params["_1"])
+	k, err := GetNewUrl(a)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
 		w.Write([]byte(config.BaseURL + k.id))
 	}
+}
+
+func UrlPreprocessor(url string) string {
+	if !strings.HasPrefix(url, "http:/") && !strings.HasPrefix(url, "https:/") {
+		url = "http://" + url
+	}
+	return url
 }
