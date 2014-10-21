@@ -37,7 +37,7 @@ func main() {
 		Extensions: []string{".tmpl", ".html"},
 	}))
 	m.Get("/", IndexHandler)
-	m.Get("/api/add/**", ApiAddURLHandler)
+	m.Get("/api/add", ApiAddURLHandler)
 	m.Get("/add", WebAddHandler)
 	m.Get("/view/:id", ViewHandler)
 	m.Get("/:id", GetURLAndRedirect)
@@ -98,6 +98,24 @@ func WebAddHandler(w http.ResponseWriter, r *http.Request, r2 render.Render) {
 	}
 }
 
+func ApiAddURLHandler(r *http.Request) string {
+	if len(r.URL.Query()["url"]) < 1 {
+		return "Error, no arguments specified"
+	}
+	k := r.URL.Query()["url"][0]
+	if k == "" {
+		return "Error, no url specified"
+	} else {
+		k := UrlPreprocessor(k)
+		new, err := GetNewUrl(k)
+		if err != nil {
+			return err.Error()
+		} else {
+			return config.BaseURL + new.id
+		}
+	}
+}
+
 func GetURLAndRedirect(params martini.Params, w http.ResponseWriter, r *http.Request, r2 render.Render) {
 	k, err := GetUrlById(params["id"])
 	if err != nil {
@@ -113,16 +131,6 @@ func GetURLAndRedirect(params martini.Params, w http.ResponseWriter, r *http.Req
 		pd := GetNewPageData()
 		pd.Message = "404 Not Found"
 		r2.HTML(http.StatusNotFound, "error", pd)
-	}
-}
-
-func ApiAddURLHandler(params martini.Params, w http.ResponseWriter, r *http.Request) {
-	a := UrlPreprocessor(params["_1"])
-	k, err := GetNewUrl(a)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	} else {
-		w.Write([]byte(config.BaseURL + k.id))
 	}
 }
 
