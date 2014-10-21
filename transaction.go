@@ -18,8 +18,9 @@ type Url struct {
 }
 
 type SiteStats struct {
-	Clicks int
-	Links  int
+	Clicks       int
+	Links        int
+	ClicksPerUrl float64
 }
 
 func GetUrlById(id string) (*Url, error) {
@@ -86,8 +87,10 @@ func GetSiteStats() SiteStats {
 	k := SiteStats{}
 	a, _ := GetTotalClicks()
 	b, _ := GetTotalUrls()
+	c, _ := GetClicksPerUrl()
 	k.Clicks = a
 	k.Links = b
+	k.ClicksPerUrl = c
 	return k
 }
 
