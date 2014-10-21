@@ -18,6 +18,11 @@ func RunJobs() {
 		SetGetTotalClicksFromScript()
 		t2 = time.Since(t)
 		log.Print("Total clicks update complete,  took: ", t2)
+		log.Print("Running Clicks Per Url Update")
+		t = time.Now()
+		SetGetClicksPerUrl()
+		t2 = time.Since(t)
+		log.Print("Clicks Per Url complete, took:", t2)
 		time.Sleep(config.GetJobInvertal())
 	}
 }

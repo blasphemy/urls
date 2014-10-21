@@ -50,3 +50,36 @@ func SetGetTotalUrlsFromScript() (int, error) {
 	log.Printf("Number of links set to %d", b)
 	return b, nil
 }
+
+func SetGetClicksPerUrl() (float64, error) {
+	db := pool.Get()
+	defer db.Close()
+	a, err := db.Do("GET", "meta:total:clicks")
+	b, err := db.Do("GET", "meta:total:links")
+	c, err := redis.Int(a, err)
+	d, err := redis.Int(b, err)
+	if err != nil {
+		return 0, err
+	}
+	x := float64(c) / float64(d)
+	_, err = db.Do("SET", "meta:clicksperurl", x)
+	if err != nil {
+		log.Print(err.Error())
+		return 0, err
+	} else {
+		log.Print("Clicks per Url set to ", x)
+		return x, nil
+	}
+}
+
+func GetClicksPerUrl() (float64, error) {
+	db := pool.Get()
+	defer db.Close()
+	a, err := db.Do("GET", "meta:clicksperurl")
+	b, err := redis.Float64(a, err)
+	if err != nil {
+		return 0, err
+	} else {
+		return b, nil
+	}
+}
