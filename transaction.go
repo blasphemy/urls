@@ -68,6 +68,7 @@ func GetNewUrl(link string) (*Url, error) {
 	new := &Url{}
 	new.id = pos
 	new.Link = link
+	log.Printf("Shortened %s to %s", new.Link, config.BaseURL+new.id)
 	return new, nil
 }
 
