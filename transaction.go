@@ -26,6 +26,14 @@ type SiteStats struct {
 func GetUrlById(id string) (*Url, error) {
 	DB := pool.Get()
 	defer DB.Close()
+	cr := UrlCache.Get(id)
+	if cr != nil {
+		log.Print("UrlCache: Cache HIT!")
+		log.Print("Updating click count in goroutine")
+		go DB.Do("INCR", "url:clicks:"+id)
+		return cr.(*Url), nil
+	}
+	log.Print("UrlCache: Cache Miss, retrieving from DB")
 	id = strings.Split(id, ":")[0]
 	k, err := DB.Do("GET", "url:link:"+id)
 	if err != nil {
@@ -41,6 +49,7 @@ func GetUrlById(id string) (*Url, error) {
 		resp.Short = config.BaseURL + id
 		resp.Link, _ = redis.String(k, err)
 		resp.Clicks = c.(int64)
+		UrlCache.Set(id, resp)
 		return resp, nil
 	}
 }
@@ -69,6 +78,9 @@ func GetNewUrl(link string) (*Url, error) {
 	new := &Url{}
 	new.id = pos
 	new.Link = link
+	new.Clicks = 0
+	new.Short = config.BaseURL + new.id
+	UrlCache.Set(new.id, new)
 	log.Printf("Shortened %s to %s", new.Link, config.BaseURL+new.id)
 	return new, nil
 }
