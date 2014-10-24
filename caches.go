@@ -16,10 +16,12 @@ func initCaches() {
 	SCOP.Upper = 20
 	SCOP.BurnStrategy = cache.BurnStrategyOldest
 	StatsCache = cache.NewCache(SCOP)
+	StatsCache.Start()
 	UCOP := cache.CacheOptions{}
 	UCOP.ExpirationTime = time.Hour * 1
 	UCOP.Upper = 1000
 	UCOP.MaxEntries = 0
 	UCOP.BurnStrategy = cache.BurnStrategyOldestLRU
 	UrlCache = cache.NewCache(UCOP)
+	UrlCache.Start()
 }
