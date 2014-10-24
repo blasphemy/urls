@@ -84,6 +84,13 @@ func GetNewCounter() (int64, error) {
 }
 
 func GetSiteStats() SiteStats {
+	cc := StatsCache.Get("Stats")
+	if cc != nil {
+		log.Print("Cache: Site Stats HIT")
+		return cc.(SiteStats)
+	} else {
+		log.Print("Cache: Site Stats MISS")
+	}
 	k := SiteStats{}
 	a, _ := GetTotalClicks()
 	b, _ := GetTotalUrls()
@@ -91,6 +98,7 @@ func GetSiteStats() SiteStats {
 	k.Clicks = a
 	k.Links = b
 	k.ClicksPerUrl = c
+	StatsCache.Set("Stats", k)
 	return k
 }
 

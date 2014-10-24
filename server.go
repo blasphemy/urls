@@ -46,6 +46,7 @@ func main() {
 		log.Print("Running jobs every: ", config.GetJobInvertal())
 		go RunJobs()
 	}
+	initCaches()
 	log.Fatal(http.ListenAndServe(config.ListenAt, m))
 }
 
