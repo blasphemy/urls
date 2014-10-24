@@ -30,7 +30,10 @@ func GetUrlById(id string) (*Url, error) {
 	if cr != nil {
 		log.Print("UrlCache: Cache HIT!")
 		log.Print("Updating click count in goroutine")
-		go DB.Do("INCR", "url:clicks:"+id)
+		_, err := DB.Do("INCR", "url:clicks:"+id)
+		if err != nil {
+			log.Print("Error updating click count: ", err.Error())
+		}
 		return cr.(*Url), nil
 	}
 	log.Print("UrlCache: Cache Miss, retrieving from DB")
