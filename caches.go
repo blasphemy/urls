@@ -13,5 +13,6 @@ func initCaches() {
 	SCOP := cache.CacheOptions{}
 	SCOP.ExpirationTime = time.Minute * 5
 	SCOP.Upper = 20
+	SCOP.BurnStrategy = cache.BurnStrategyOldest
 	StatsCache = cache.NewCache(SCOP)
 }
