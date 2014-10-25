@@ -118,7 +118,7 @@ func ApiAddURLHandler(r *http.Request) string {
 		if err != nil {
 			return err.Error()
 		} else {
-			return config.BaseURL + new.id
+			return config.GetBaseUrl() + new.id
 		}
 	}
 }
@@ -130,8 +130,8 @@ func GetURLAndRedirect(params martini.Params, w http.ResponseWriter, r *http.Req
 		return
 	}
 	if k != nil {
-		if strings.Contains(k.Link, config.BaseURL) || strings.Split(k.Link, ":")[0] == "/"+k.id {
-			k.Link = config.BaseURL
+		if strings.Contains(k.Link, config.HostName) || strings.Split(k.Link, ":")[0] == "/"+k.id {
+			k.Link = config.GetBaseUrl()
 		}
 		http.Redirect(w, r, k.Link, http.StatusMovedPermanently)
 	} else {

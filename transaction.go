@@ -49,7 +49,7 @@ func GetUrlById(id string) (*Url, error) {
 		c, _ := DB.Do("INCR", "url:clicks:"+id)
 		resp := &Url{}
 		resp.id = id
-		resp.Short = config.BaseURL + id
+		resp.Short = config.GetBaseUrl() + id
 		resp.Link, _ = redis.String(k, err)
 		resp.Clicks = c.(int64)
 		UrlCache.Set(id, resp)
@@ -82,9 +82,9 @@ func GetNewUrl(link string) (*Url, error) {
 	new.id = pos
 	new.Link = link
 	new.Clicks = 0
-	new.Short = config.BaseURL + new.id
+	new.Short = config.GetBaseUrl() + new.id
 	UrlCache.Set(new.id, new)
-	log.Printf("Shortened %s to %s", new.Link, config.BaseURL+new.id)
+	log.Printf("Shortened %s to %s", new.Link, config.GetBaseUrl()+new.id)
 	return new, nil
 }
 

@@ -6,17 +6,26 @@ import (
 )
 
 type Config struct {
-	BaseURL     string
+	HostName    string
 	ListenAt    string
 	DBAddress   string
 	DBPassword  string
 	RunJobs     bool
+	ForceHttps  bool
 	JobInvertal int
 }
 
 var (
 	config *Config
 )
+
+func (c *Config) GetBaseUrl() string {
+	if c.ForceHttps {
+		return "https://" + c.HostName + "/"
+	} else {
+		return "http://" + c.HostName + "/"
+	}
+}
 
 func MakeConfig() error {
 	config = &Config{}
