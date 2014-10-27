@@ -30,10 +30,7 @@ func GetUrlById(id string) (*Url, error) {
 	if cr != nil {
 		log.Print("UrlCache: Cache HIT!")
 		log.Print("Updating click count in goroutine")
-		_, err := DB.Do("INCR", "url:clicks:"+id)
-		if err != nil {
-			log.Print("Error updating click count: ", err.Error())
-		}
+		go UpdateClickCount(id)
 		return cr.(*Url), nil
 	}
 	log.Print("UrlCache: Cache Miss, retrieving from DB")
@@ -46,12 +43,12 @@ func GetUrlById(id string) (*Url, error) {
 	case nil:
 		return nil, nil
 	default:
-		c, _ := DB.Do("INCR", "url:clicks:"+id)
+		c, _ := UpdateClickCount(id)
 		resp := &Url{}
 		resp.id = id
 		resp.Short = config.GetBaseUrl() + id
 		resp.Link, _ = redis.String(k, err)
-		resp.Clicks = c.(int64)
+		resp.Clicks = int64(c)
 		UrlCache.Set(id, resp)
 		return resp, nil
 	}
@@ -159,4 +156,12 @@ func GetTotalClicks() (int, error) {
 		return 0, nil
 	}
 	return j, nil
+}
+
+func UpdateClickCount(id string) (int, error) {
+	DB := pool.Get()
+	defer DB.Close()
+	k, err := DB.Do("INCR", "url:clicks:"+id)
+	i, err := redis.Int(k, err)
+	return i, err
 }
