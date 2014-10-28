@@ -71,6 +71,16 @@ func GetNewUrl(link string, host string) (*Url, error) {
 	}
 	pos := b62_Encode(uint64(i))
 	_, err = DB.Do("SET", "url:link:"+pos, link)
+	go func(pos string) {
+		d := pool.Get()
+		defer d.Close()
+		_, err := d.Do("SET", "url:clicks:"+pos, 0)
+		if err != nil {
+			log.Printf("Error settings %s clicks to 0", pos)
+		} else {
+			log.Printf("%s clicks set to 0", pos)
+		}
+	}(pos)
 	_, err = DB.Do("SET", "url:clicks:"+pos, 0)
 	if err != nil {
 		return nil, err
