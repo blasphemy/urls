@@ -81,7 +81,6 @@ func GetNewUrl(link string, host string) (*Url, error) {
 			log.Printf("%s clicks set to 0", pos)
 		}
 	}(pos)
-	_, err = DB.Do("SET", "url:clicks:"+pos, 0)
 	if err != nil {
 		return nil, err
 	}
