@@ -19,11 +19,17 @@ var (
 	config *Config
 )
 
-func (c *Config) GetBaseUrl() string {
-	if c.ForceHttps {
-		return "https://" + c.HostName + "/"
+func (c *Config) GetBaseUrl(host string) string {
+	var h string
+	if len(c.HostName) > 1 {
+		h = c.HostName
 	} else {
-		return "http://" + c.HostName + "/"
+		h = host
+	}
+	if c.ForceHttps {
+		return "https://" + h + "/"
+	} else {
+		return "http://" + h + "/"
 	}
 }
 

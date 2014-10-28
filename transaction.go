@@ -23,7 +23,7 @@ type SiteStats struct {
 	ClicksPerUrl float64
 }
 
-func GetUrlById(id string) (*Url, error) {
+func GetUrlById(id string, host string) (*Url, error) {
 	DB := pool.Get()
 	defer DB.Close()
 	cr := UrlCache.Get(id)
@@ -46,7 +46,7 @@ func GetUrlById(id string) (*Url, error) {
 		c, _ := UpdateClickCount(id)
 		resp := &Url{}
 		resp.id = id
-		resp.Short = config.GetBaseUrl() + id
+		resp.Short = config.GetBaseUrl(host) + id
 		resp.Link, _ = redis.String(k, err)
 		resp.Clicks = int64(c)
 		UrlCache.Set(id, resp)
@@ -54,7 +54,7 @@ func GetUrlById(id string) (*Url, error) {
 	}
 }
 
-func GetNewUrl(link string) (*Url, error) {
+func GetNewUrl(link string, host string) (*Url, error) {
 	DB := pool.Get()
 	defer DB.Close()
 	i, err := GetNewCounter()
@@ -79,9 +79,9 @@ func GetNewUrl(link string) (*Url, error) {
 	new.id = pos
 	new.Link = link
 	new.Clicks = 0
-	new.Short = config.GetBaseUrl() + new.id
+	new.Short = config.GetBaseUrl(host) + new.id
 	UrlCache.Set(new.id, new)
-	log.Printf("Shortened %s to %s", new.Link, config.GetBaseUrl()+new.id)
+	log.Printf("Shortened %s to %s", new.Link, config.GetBaseUrl(host)+new.id)
 	return new, nil
 }
 

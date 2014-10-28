@@ -62,7 +62,7 @@ func IndexHandler(r render.Render) {
 }
 
 func ViewHandler(m martini.Params, w http.ResponseWriter, r *http.Request, r2 render.Render) {
-	k, err := GetUrlById(m["id"])
+	k, err := GetUrlById(m["id"], r.Host)
 	if err != nil {
 		pd := GetNewPageData()
 		pd.Message = err.Error()
@@ -94,7 +94,7 @@ func WebAddHandler(w http.ResponseWriter, r *http.Request, r2 render.Render) {
 		http.Redirect(w, r, "/", http.StatusMovedPermanently)
 	} else {
 		k = UrlPreprocessor(k)
-		new, err := GetNewUrl(k)
+		new, err := GetNewUrl(k, r.Host)
 		if err != nil {
 			pd := GetNewPageData()
 			pd.Message = err.Error()
@@ -114,24 +114,24 @@ func ApiAddURLHandler(r *http.Request) string {
 		return "Error, no url specified"
 	} else {
 		k := UrlPreprocessor(k)
-		new, err := GetNewUrl(k)
+		new, err := GetNewUrl(k, r.Host)
 		if err != nil {
 			return err.Error()
 		} else {
-			return config.GetBaseUrl() + new.id
+			return config.GetBaseUrl(r.Host) + new.id
 		}
 	}
 }
 
 func GetURLAndRedirect(params martini.Params, w http.ResponseWriter, r *http.Request, r2 render.Render) {
-	k, err := GetUrlById(params["id"])
+	k, err := GetUrlById(params["id"], r.Host)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if k != nil {
 		if strings.Contains(k.Link, config.HostName) || strings.Split(k.Link, ":")[0] == "/"+k.id {
-			k.Link = config.GetBaseUrl()
+			k.Link = config.GetBaseUrl(r.Host)
 		}
 		http.Redirect(w, r, k.Link, http.StatusMovedPermanently)
 	} else {
