@@ -142,11 +142,7 @@ func newPool() *redis.Pool {
 func GetTotalUrls() (int, error) {
 	db := pool.Get()
 	defer db.Close()
-	k, err := db.Do("GET", "meta:total:links")
-	if err != nil {
-		return 0, err
-	}
-	l, err := redis.Int(k, err)
+	l, err := redis.Int(db.Do("GET", "meta:total:links"))
 	if err != nil {
 		return 0, err
 	}
@@ -156,11 +152,7 @@ func GetTotalUrls() (int, error) {
 func GetTotalClicks() (int, error) {
 	DB := pool.Get()
 	defer DB.Close()
-	k, err := DB.Do("GET", "meta:total:clicks")
-	if err != nil {
-		return 0, nil
-	}
-	j, err := redis.Int(k, err)
+	j, err := redis.Int(DB.Do("GET", "meta:total:clicks"))
 	if err != nil {
 		return 0, nil
 	}
