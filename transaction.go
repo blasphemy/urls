@@ -5,7 +5,7 @@ import (
 	r "github.com/dancannon/gorethink"
 	"github.com/garyburd/redigo/redis"
 	"log"
-	"strings"
+	//"strings"
 )
 
 var (
@@ -25,6 +25,7 @@ type SiteStats struct {
 	ClicksPerUrl float64
 }
 
+/*
 func GetUrlById(id string, host string) (*Url, error) {
 	DB := pool.Get()
 	defer DB.Close()
@@ -54,6 +55,24 @@ func GetUrlById(id string, host string) (*Url, error) {
 		UrlCache.Set(id, resp)
 		return resp, nil
 	}
+}
+*/
+
+func GetUrlById(id string, host string) (*Url, error) {
+	cursor, err := r.Table("urls").Get(id).Run(session)
+	if err != nil {
+		return nil, err
+	}
+	result := Url{}
+	err = cursor.One(&result)
+	if err != nil {
+		return nil, err
+	}
+	err = r.Table("urls").Update(map[string]interface{}{"clicks": r.Row.Field("clicks").Add(1)}).Exec(session)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 func GetNewUrl(link string, host string) (*Url, error) {
@@ -174,6 +193,7 @@ func GetTotalClicks() (int, error) {
 	return int(result), nil
 }
 
+//No longer needed?
 func UpdateClickCount(id string) (int, error) {
 	DB := pool.Get()
 	defer DB.Close()
