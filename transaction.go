@@ -153,13 +153,20 @@ func newPool() *redis.Pool {
 }
 
 func GetTotalUrls() (int, error) {
-	db := pool.Get()
-	defer db.Close()
-	l, err := redis.Int(db.Do("GET", "meta:total:links"))
+	var target interface{}
+	cursor, err := r.Table("meta").Get("total_links").Field("value").Run(session)
 	if err != nil {
 		return 0, err
 	}
-	return l, err
+	cursor.One(&target)
+	if cursor.Err() != nil {
+		return 0, cursor.Err()
+	}
+	result, ok := target.(float64)
+	if !ok {
+		return 0, errors.New("meta.total_links is not a float64")
+	}
+	return int(result), nil
 }
 
 func GetTotalClicks() (int, error) {
