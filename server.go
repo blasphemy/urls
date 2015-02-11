@@ -49,7 +49,6 @@ func main() {
 	m.Get("/", IndexHandler)
 	m.Get("/api/add", ApiAddURLHandler)
 	m.Get("/add", WebAddHandler)
-	m.Get("/diag", DiagHandler)
 	m.Get("/view/:id", ViewHandler)
 	m.Get("/:id", GetURLAndRedirect)
 	log.Println("Listening on " + config.ListenAt)
@@ -57,13 +56,7 @@ func main() {
 		log.Print("Running jobs every: ", config.GetJobInvertal())
 		go RunJobs()
 	}
-	initCaches()
 	log.Fatal(http.ListenAndServe(config.ListenAt, m))
-}
-
-func DiagHandler(r render.Render) {
-	k := GetDiagnostics()
-	r.HTML(http.StatusOK, "diag", k)
 }
 
 func IndexHandler(r render.Render) {

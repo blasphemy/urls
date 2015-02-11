@@ -2,10 +2,10 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	r "github.com/dancannon/gorethink"
 	"github.com/garyburd/redigo/redis"
 	"log"
-	//"strings"
 )
 
 var (
@@ -25,38 +25,9 @@ type SiteStats struct {
 	ClicksPerUrl float64
 }
 
-/*
-func GetUrlById(id string, host string) (*Url, error) {
-	DB := pool.Get()
-	defer DB.Close()
-	cr := UrlCache.Get(id)
-	if cr != nil {
-		log.Print("UrlCache: Cache HIT!")
-		log.Print("Updating click count in goroutine")
-		go UpdateClickCount(id)
-		//return cr.(*Url), nil
-	}
-	log.Print("UrlCache: Cache Miss, retrieving from DB")
-	id = strings.Split(id, ":")[0]
-	k, err := DB.Do("GET", "url:link:"+id)
-	if err != nil {
-		return nil, err
-	}
-	switch k.(type) {
-	case nil:
-		return nil, nil
-	default:
-		c, _ := UpdateClickCount(id)
-		resp := &Url{}
-		resp.Id = id
-		resp.Short = config.GetBaseUrl(host) + id
-		resp.Link, _ = redis.String(k, err)
-		resp.Clicks = int64(c)
-		UrlCache.Set(id, resp)
-		return resp, nil
-	}
+func (u *Url) setShortLink(host string) {
+	u.Short = config.GetBaseUrl(host) + u.Id
 }
-*/
 
 func GetUrlById(id string, host string) (*Url, error) {
 	cursor, err := r.Table("urls").Get(id).Run(session)
@@ -72,6 +43,7 @@ func GetUrlById(id string, host string) (*Url, error) {
 	if err != nil {
 		return nil, err
 	}
+	result.setShortLink(host)
 	return &result, nil
 }
 
@@ -99,7 +71,6 @@ func GetNewUrl(link string, host string) (*Url, error) {
 	if err != nil {
 		return nil, err
 	}
-	UrlCache.Set(result.Id, result)
 	return &result, nil
 }
 
@@ -125,21 +96,13 @@ func GetNewID() (int64, error) {
 }
 
 func GetSiteStats() SiteStats {
-	cc := StatsCache.Get("Stats")
-	if cc != nil {
-		log.Print("Cache: Site Stats HIT")
-		return cc.(SiteStats)
-	} else {
-		log.Print("Cache: Site Stats MISS")
-	}
 	k := SiteStats{}
-	a, _ := GetTotalClicks()
-	b, _ := GetTotalUrls()
+	a, _ := GetMetaValue("total_clicks")
+	b, _ := GetMetaValue("total_links")
 	c, _ := GetClicksPerUrl()
 	k.Clicks = a
 	k.Links = b
 	k.ClicksPerUrl = c
-	StatsCache.Set("Stats", k)
 	return k
 }
 
@@ -159,36 +122,21 @@ func newPool() *redis.Pool {
 	}, 3)
 }
 
-func GetTotalUrls() (int, error) {
+func GetMetaValue(key string) (int, error) {
 	var target interface{}
-	cursor, err := r.Table("meta").Get("total_links").Field("value").Run(session)
+	cursor, err := r.Table("meta").Get(key).Field("value").Run(session)
 	if err != nil {
 		return 0, err
 	}
 	cursor.One(&target)
 	if cursor.Err() != nil {
+		//TODO
+		//if result is empty set it to 0
 		return 0, cursor.Err()
 	}
 	result, ok := target.(float64)
 	if !ok {
-		return 0, errors.New("meta.total_links is not a float64")
-	}
-	return int(result), nil
-}
-
-func GetTotalClicks() (int, error) {
-	var target interface{}
-	cursor, err := r.Table("meta").Get("total_clicks").Field("value").Run(session)
-	if err != nil {
-		return 0, err
-	}
-	cursor.One(&target)
-	if cursor.Err() != nil {
-		return 0, cursor.Err()
-	}
-	result, ok := target.(float64)
-	if !ok {
-		return 0, errors.New("meta.total_clicks is not a float64")
+		return 0, errors.New(fmt.Sprintf("meta.%s is not a float64", key))
 	}
 	return int(result), nil
 }
