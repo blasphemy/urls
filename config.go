@@ -1,18 +1,20 @@
 package main
 
 import (
-	"github.com/BurntSushi/toml"
 	"time"
+
+	"github.com/BurntSushi/toml"
 )
 
 type Config struct {
-	HostName    string
-	ListenAt    string
-	DBAddress   string
-	DBPassword  string
-	RunJobs     bool
-	ForceHttps  bool
-	JobInvertal int
+	HostName                string
+	ListenAt                string
+	DBAddress               string
+	DBPassword              string
+	RethinkConnectionString string
+	RunJobs                 bool
+	ForceHttps              bool
+	JobInvertal             int
 }
 
 var (

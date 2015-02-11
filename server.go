@@ -1,16 +1,19 @@
 package main
 
 import (
-	"github.com/garyburd/redigo/redis"
-	"github.com/go-martini/martini"
-	"github.com/martini-contrib/render"
 	"log"
 	"net/http"
 	"strings"
+
+	r "github.com/dancannon/gorethink"
+	"github.com/garyburd/redigo/redis"
+	"github.com/go-martini/martini"
+	"github.com/martini-contrib/render"
 )
 
 var (
-	pool *redis.Pool
+	pool    *redis.Pool
+	session *r.Session
 )
 
 type PageData struct {
@@ -27,6 +30,13 @@ func GetNewPageData() PageData {
 
 func main() {
 	err := MakeConfig()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	session, err = r.Connect(r.ConnectOpts{
+		Address:  config.RethinkConnectionString,
+		Database: "urls",
+	})
 	if err != nil {
 		log.Fatal(err.Error())
 	}

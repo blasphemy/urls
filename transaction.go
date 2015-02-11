@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	r "github.com/dancannon/gorethink"
 	"github.com/garyburd/redigo/redis"
 	"log"
 	"strings"
@@ -57,13 +59,13 @@ func GetUrlById(id string, host string) (*Url, error) {
 func GetNewUrl(link string, host string) (*Url, error) {
 	DB := pool.Get()
 	defer DB.Close()
-	i, err := GetNewCounter()
+	i, err := GetNewID()
 	if err != nil {
 		return nil, err
 	}
 	for _, k := range protected {
 		for b62_Encode(uint64(i)) == k {
-			i, err = GetNewCounter()
+			i, err = GetNewID()
 			if err != nil {
 				return nil, err
 			}
@@ -94,14 +96,25 @@ func GetNewUrl(link string, host string) (*Url, error) {
 	return new, nil
 }
 
-func GetNewCounter() (int64, error) {
-	DB := pool.Get()
-	defer DB.Close()
-	n, err := DB.Do("INCR", "meta:COUNTER")
+func GetNewID() (int64, error) {
+	var target interface{}
+	err := r.Table("meta").Get("counter").Update(map[string]interface{}{"value": r.Row.Field("value").Add(1)}).Exec(session)
 	if err != nil {
 		return 0, err
 	}
-	return n.(int64), nil
+	cursor, err := r.Table("meta").Get("counter").Field("value").Run(session)
+	if err != nil {
+		return 0, err
+	}
+	cursor.One(&target)
+	if cursor.Err() != nil {
+		return 0, cursor.Err()
+	}
+	final, ok := target.(float64)
+	if !ok {
+		return 0, errors.New("Cannot convert counter to float64")
+	}
+	return int64(final), nil
 }
 
 func GetSiteStats() SiteStats {
