@@ -192,12 +192,3 @@ func GetTotalClicks() (int, error) {
 	}
 	return int(result), nil
 }
-
-//No longer needed?
-func UpdateClickCount(id string) (int, error) {
-	DB := pool.Get()
-	defer DB.Close()
-	k, err := DB.Do("INCR", "url:clicks:"+id)
-	i, err := redis.Int(k, err)
-	return i, err
-}
