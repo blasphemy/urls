@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	r "github.com/dancannon/gorethink"
 	"github.com/garyburd/redigo/redis"
 	"log"
 )
@@ -8,7 +10,7 @@ import (
 const (
 	redis_lua_get_set_click_sum = `
 		local sum = 0
-		local matches = redis.call('KEYS', 'url:clicks:*')
+		local matches = redis.call('KEYS', 'url:clicks:*')r 
 		for _,key in ipairs(matches) do
 		    local val = redis.call('GET', key)
 		    sum = sum + tonumber(val)
@@ -36,6 +38,28 @@ func SetGetTotalClicksFromScript() (int, error) {
 	return b, nil
 }
 
+func SetGetTotalLinks() (int64, error) {
+	cursor, err := r.Table("urls").Count().Run(session)
+	if err != nil {
+		return 0, err
+	}
+	var result interface{}
+	err = cursor.One(&result)
+	if err != nil {
+		return 0, err
+	}
+	result2, ok := result.(float64)
+	if !ok {
+		return 0, errors.New("urls.count() is not a float64")
+	}
+	err = r.Table("meta").Get("total_links").Update(map[string]interface{}{"value": result2}).Exec(session)
+	if err != nil {
+		return 0, err
+	}
+	return int64(result2), nil
+}
+
+/*
 func SetGetTotalUrlsFromScript() (int, error) {
 	db := pool.Get()
 	s := redis.NewScript(0, redis_lua_get_set_link_count)
@@ -50,6 +74,7 @@ func SetGetTotalUrlsFromScript() (int, error) {
 	log.Printf("Number of links set to %d", b)
 	return b, nil
 }
+*/
 
 func SetGetClicksPerUrl() (float64, error) {
 	db := pool.Get()

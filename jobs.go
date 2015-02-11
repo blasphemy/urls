@@ -10,7 +10,7 @@ func RunJobs() {
 		log.Print("Running Jobs")
 		log.Print("Running Total Links Update")
 		t := time.Now()
-		SetGetTotalUrlsFromScript()
+		SetGetTotalLinks()
 		t2 := time.Since(t)
 		log.Print("Total links update complete, took: ", t2)
 		log.Print("Running Total Clicks Update")
