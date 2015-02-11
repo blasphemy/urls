@@ -170,13 +170,20 @@ func GetTotalUrls() (int, error) {
 }
 
 func GetTotalClicks() (int, error) {
-	DB := pool.Get()
-	defer DB.Close()
-	j, err := redis.Int(DB.Do("GET", "meta:total:clicks"))
+	var target interface{}
+	cursor, err := r.Table("meta").Get("total_clicks").Field("value").Run(session)
 	if err != nil {
-		return 0, nil
+		return 0, err
 	}
-	return j, nil
+	cursor.One(&target)
+	if cursor.Err() != nil {
+		return 0, cursor.Err()
+	}
+	result, ok := target.(float64)
+	if !ok {
+		return 0, errors.New("meta.total_clicks is not a float64")
+	}
+	return int(result), nil
 }
 
 func UpdateClickCount(id string) (int, error) {
