@@ -13,10 +13,10 @@ var (
 )
 
 type Url struct {
-	id     string
-	Link   string
-	Short  string
-	Clicks int64
+	Id     string `gorethink:"id"`
+	Link   string `gorethink:"link"`
+	Short  string `gorethink:"-"`
+	Clicks int64  `gorethink:"clicks"`
 }
 
 type SiteStats struct {
@@ -33,7 +33,7 @@ func GetUrlById(id string, host string) (*Url, error) {
 		log.Print("UrlCache: Cache HIT!")
 		log.Print("Updating click count in goroutine")
 		go UpdateClickCount(id)
-		return cr.(*Url), nil
+		//return cr.(*Url), nil
 	}
 	log.Print("UrlCache: Cache Miss, retrieving from DB")
 	id = strings.Split(id, ":")[0]
@@ -47,7 +47,7 @@ func GetUrlById(id string, host string) (*Url, error) {
 	default:
 		c, _ := UpdateClickCount(id)
 		resp := &Url{}
-		resp.id = id
+		resp.Id = id
 		resp.Short = config.GetBaseUrl(host) + id
 		resp.Link, _ = redis.String(k, err)
 		resp.Clicks = int64(c)
@@ -57,8 +57,6 @@ func GetUrlById(id string, host string) (*Url, error) {
 }
 
 func GetNewUrl(link string, host string) (*Url, error) {
-	DB := pool.Get()
-	defer DB.Close()
 	i, err := GetNewID()
 	if err != nil {
 		return nil, err
@@ -72,28 +70,18 @@ func GetNewUrl(link string, host string) (*Url, error) {
 		}
 	}
 	pos := b62_Encode(uint64(i))
-	_, err = DB.Do("SET", "url:link:"+pos, link)
+	result := Url{}
+	result.Id = pos
+	result.Clicks = 0
+	result.Link = link
+	result.Short = config.GetBaseUrl(host) + result.Id
+	err = r.Table("urls").Insert(result).Exec(session)
+	log.Println(result)
 	if err != nil {
 		return nil, err
 	}
-	go func(pos string) {
-		d := pool.Get()
-		defer d.Close()
-		_, err := d.Do("SET", "url:clicks:"+pos, 0)
-		if err != nil {
-			log.Printf("Error setting %s clicks to 0", pos)
-		} else {
-			log.Printf("%s clicks set to 0", pos)
-		}
-	}(pos)
-	new := &Url{}
-	new.id = pos
-	new.Link = link
-	new.Clicks = 0
-	new.Short = config.GetBaseUrl(host) + new.id
-	UrlCache.Set(new.id, new)
-	log.Printf("Shortened %s to %s", new.Link, config.GetBaseUrl(host)+new.id)
-	return new, nil
+	UrlCache.Set(result.Id, result)
+	return &result, nil
 }
 
 func GetNewID() (int64, error) {

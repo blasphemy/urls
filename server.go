@@ -110,7 +110,7 @@ func WebAddHandler(w http.ResponseWriter, r *http.Request, r2 render.Render) {
 			pd.Message = err.Error()
 			r2.HTML(500, "error", pd)
 		} else {
-			http.Redirect(w, r, "/view/"+new.id, http.StatusMovedPermanently)
+			http.Redirect(w, r, "/view/"+new.Id, http.StatusMovedPermanently)
 		}
 	}
 }
@@ -128,7 +128,7 @@ func ApiAddURLHandler(r *http.Request) string {
 		if err != nil {
 			return err.Error()
 		} else {
-			return config.GetBaseUrl(r.Host) + new.id
+			return config.GetBaseUrl(r.Host) + new.Id
 		}
 	}
 }
@@ -140,7 +140,7 @@ func GetURLAndRedirect(params martini.Params, w http.ResponseWriter, r *http.Req
 		return
 	}
 	if k != nil {
-		if strings.Contains(k.Link, config.HostName) || strings.Split(k.Link, ":")[0] == "/"+k.id {
+		if strings.Contains(k.Link, config.HostName) || strings.Split(k.Link, ":")[0] == "/"+k.Id {
 			k.Link = config.GetBaseUrl(r.Host)
 		}
 		http.Redirect(w, r, k.Link, http.StatusMovedPermanently)
