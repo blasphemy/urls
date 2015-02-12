@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	r "github.com/dancannon/gorethink"
-	"github.com/garyburd/redigo/redis"
 	"log"
 )
 
@@ -20,8 +19,8 @@ type Url struct {
 }
 
 type SiteStats struct {
-	Clicks       int
-	Links        int
+	Clicks       int64
+	Links        int64
 	ClicksPerUrl float64
 }
 
@@ -39,7 +38,7 @@ func GetUrlById(id string, host string) (*Url, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = r.Table("urls").Update(map[string]interface{}{"clicks": r.Row.Field("clicks").Add(1)}).Exec(session)
+	err = r.Table("urls").Update(map[string]interface{}{"id": result.Id, "clicks": r.Row.Field("clicks").Add(1)}).Exec(session)
 	if err != nil {
 		return nil, err
 	}
@@ -97,32 +96,66 @@ func GetNewID() (int64, error) {
 
 func GetSiteStats() SiteStats {
 	k := SiteStats{}
-	a, _ := GetMetaValue("total_clicks")
-	b, _ := GetMetaValue("total_links")
-	c, _ := GetClicksPerUrl()
-	k.Clicks = a
-	k.Links = b
-	k.ClicksPerUrl = c
+	totalClicks, _ := GetTotalClicks()
+	totalLinks, _ := GetTotalLinks()
+	clicksPerUrl, _ := GetClicksPerUrl()
+	k.Clicks = totalClicks
+	k.Links = totalLinks
+	k.ClicksPerUrl = clicksPerUrl
 	return k
 }
 
-func newPool() *redis.Pool {
-	return redis.NewPool(func() (redis.Conn, error) {
-		conn, err := redis.Dial("tcp", config.DBAddress)
-		if err != nil {
-			return nil, err
-		}
-		_, err = conn.Do("AUTH", config.DBPassword)
-		if err != nil {
-			log.Print(err.Error())
-			return nil, err
-		}
-		return conn, nil
+func GetTotalClicks() (int64, error) {
+	var result interface{}
+	cursor, err := r.Table("urls").Sum("clicks").Run(session)
+	if err != nil {
+		return 0, err
+	}
+	err = cursor.One(&result)
+	if err != nil {
+		return 0, err
+	}
+	final, ok := result.(float64)
+	if !ok {
+		return 0, errors.New("urls.sum(\"clicks\") is not a float64")
+	}
+	return int64(final), nil
 
-	}, 3)
 }
 
-func GetMetaValue(key string) (int, error) {
+func GetTotalLinks() (int64, error) {
+	var result interface{}
+	cursor, err := r.Table("urls").Count().Run(session)
+	if err != nil {
+		return 0, err
+	}
+	err = cursor.One(&result)
+	if err != nil {
+		return 0, err
+	}
+	final, ok := result.(float64)
+	if !ok {
+		return 0, errors.New("urls.count is not a float64")
+	}
+	return int64(final), nil
+
+}
+
+//Totally being lazy on this one...
+func GetClicksPerUrl() (float64, error) {
+	totalLinks, err := GetTotalLinks()
+	if err != nil {
+		return 0, err
+	}
+	totalClicks, err := GetTotalClicks()
+	if err != nil {
+		return 0, err
+	}
+	return float64(totalClicks) / float64(totalLinks), nil
+
+}
+
+func GetMetaValue(key string) (interface{}, error) {
 	var target interface{}
 	cursor, err := r.Table("meta").Get(key).Field("value").Run(session)
 	if err != nil {
@@ -138,5 +171,12 @@ func GetMetaValue(key string) (int, error) {
 	if !ok {
 		return 0, errors.New(fmt.Sprintf("meta.%s is not a float64", key))
 	}
-	return int(result), nil
+	return result, nil
 }
+
+//Idea for unique urls?
+/*
+func ThisisATest() {
+	r.Table("urls").AtIndex("link").Distinct().Run(session)
+}
+*/

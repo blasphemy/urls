@@ -1,18 +1,13 @@
 package main
 
 import (
-	"time"
-
 	"github.com/BurntSushi/toml"
 )
 
 type Config struct {
 	HostName                string
 	ListenAt                string
-	DBAddress               string
-	DBPassword              string
 	RethinkConnectionString string
-	RunJobs                 bool
 	ForceHttps              bool
 	JobInvertal             int
 }
@@ -41,13 +36,5 @@ func MakeConfig() error {
 		return err
 	} else {
 		return nil
-	}
-}
-
-func (c *Config) GetJobInvertal() time.Duration {
-	if c.JobInvertal > 0 {
-		return time.Minute * time.Duration(c.JobInvertal)
-	} else {
-		return time.Minute * 10
 	}
 }

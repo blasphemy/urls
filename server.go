@@ -6,13 +6,11 @@ import (
 	"strings"
 
 	r "github.com/dancannon/gorethink"
-	"github.com/garyburd/redigo/redis"
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/render"
 )
 
 var (
-	pool    *redis.Pool
 	session *r.Session
 )
 
@@ -40,7 +38,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	pool = newPool()
 	m := martini.Classic()
 	m.Use(render.Renderer(render.Options{
 		Directory:  "templates",
@@ -52,10 +49,6 @@ func main() {
 	m.Get("/view/:id", ViewHandler)
 	m.Get("/:id", GetURLAndRedirect)
 	log.Println("Listening on " + config.ListenAt)
-	if config.RunJobs {
-		log.Print("Running jobs every: ", config.GetJobInvertal())
-		go RunJobs()
-	}
 	log.Fatal(http.ListenAndServe(config.ListenAt, m))
 }
 
