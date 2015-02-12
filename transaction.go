@@ -36,10 +36,12 @@ func GetUrlById(id string, host string) (*Url, error) {
 	result := Url{}
 	err = cursor.One(&result)
 	if err != nil {
+		log.Println(err.Error())
 		return nil, err
 	}
 	err = r.Table("urls").Update(map[string]interface{}{"id": result.Id, "clicks": r.Row.Field("clicks").Add(1)}).Exec(session)
 	if err != nil {
+		log.Println(err.Error())
 		return nil, err
 	}
 	result.setShortLink(host)
@@ -68,6 +70,7 @@ func GetNewUrl(link string, host string) (*Url, error) {
 	err = r.Table("urls").Insert(result).Exec(session)
 	log.Println(result)
 	if err != nil {
+		log.Println(err.Error())
 		return nil, err
 	}
 	return &result, nil
@@ -77,10 +80,12 @@ func GetNewID() (int64, error) {
 	var target interface{}
 	err := r.Table("meta").Get("counter").Update(map[string]interface{}{"value": r.Row.Field("value").Add(1)}).Exec(session)
 	if err != nil {
+		log.Println(err.Error())
 		return 0, err
 	}
 	cursor, err := r.Table("meta").Get("counter").Field("value").Run(session)
 	if err != nil {
+		log.Println(err.Error())
 		return 0, err
 	}
 	cursor.One(&target)

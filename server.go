@@ -5,13 +5,13 @@ import (
 	"net/http"
 	"strings"
 
-	r "github.com/dancannon/gorethink"
+	rdb "github.com/dancannon/gorethink"
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/render"
 )
 
 var (
-	session *r.Session
+	session *rdb.Session
 )
 
 type PageData struct {
@@ -31,7 +31,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	session, err = r.Connect(r.ConnectOpts{
+	session, err = rdb.Connect(rdb.ConnectOpts{
 		Address:  config.RethinkConnectionString,
 		Database: "urls",
 	})
@@ -60,9 +60,15 @@ func IndexHandler(r render.Render) {
 func ViewHandler(m martini.Params, w http.ResponseWriter, r *http.Request, r2 render.Render) {
 	k, err := GetUrlById(m["id"], r.Host)
 	if err != nil {
-		pd := GetNewPageData()
-		pd.Message = err.Error()
-		r2.HTML(http.StatusInternalServerError, "error", pd)
+		if err == rdb.ErrEmptyResult {
+			pd := GetNewPageData()
+			pd.Message = "404 Not Found"
+			r2.HTML(http.StatusNotFound, "error", pd)
+		} else {
+			pd := GetNewPageData()
+			pd.Message = err.Error()
+			r2.HTML(http.StatusInternalServerError, "error", pd)
+		}
 		return
 	}
 	if k != nil {
@@ -122,7 +128,15 @@ func ApiAddURLHandler(r *http.Request) string {
 func GetURLAndRedirect(params martini.Params, w http.ResponseWriter, r *http.Request, r2 render.Render) {
 	k, err := GetUrlById(params["id"], r.Host)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		if err == rdb.ErrEmptyResult {
+			pd := GetNewPageData()
+			pd.Message = "404 Not Found"
+			r2.HTML(http.StatusNotFound, "error", pd)
+		} else {
+			pd := GetNewPageData()
+			pd.Message = err.Error()
+			r2.HTML(http.StatusInternalServerError, "error", pd)
+		}
 		return
 	}
 	if k != nil {
