@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/blasphemy/urls/utils"
 	r "github.com/dancannon/gorethink"
 	"log"
 )
@@ -12,10 +13,16 @@ var (
 )
 
 type Url struct {
-	Id     string `gorethink:"id"`
-	Link   string `gorethink:"link"`
-	Short  string `gorethink:"-"`
-	Clicks int64  `gorethink:"clicks"`
+	Id     string   `gorethink:"id"`
+	Link   string   `gorethink:"link"`
+	Short  string   `gorethink:"-"`
+	Clicks int64    `gorethink:"clicks"`
+	User   UserData `gorethink:"user_data"`
+}
+
+type UserData struct {
+	IpAddress string `gorethink:"ip"`
+	UserAgent string `gorethink:"user_agent"`
 }
 
 type SiteStats struct {
@@ -48,25 +55,26 @@ func GetUrlById(id string, host string) (*Url, error) {
 	return &result, nil
 }
 
-func GetNewUrl(link string, host string) (*Url, error) {
+func GetNewUrl(link string, host string, user UserData) (*Url, error) {
 	i, err := GetNewID()
 	if err != nil {
 		return nil, err
 	}
 	for _, k := range protected {
-		for b62_Encode(uint64(i)) == k {
+		for utils.Base62Encode(uint64(i)) == k {
 			i, err = GetNewID()
 			if err != nil {
 				return nil, err
 			}
 		}
 	}
-	pos := b62_Encode(uint64(i))
+	pos := utils.Base62Encode(uint64(i))
 	result := Url{}
 	result.Id = pos
 	result.Clicks = 0
 	result.Link = link
 	result.Short = config.GetBaseUrl(host) + result.Id
+	result.User = user
 	err = r.Table("urls").Insert(result).Exec(session)
 	log.Println(result)
 	if err != nil {
@@ -80,16 +88,27 @@ func GetNewID() (int64, error) {
 	var target interface{}
 	err := r.Table("meta").Get("counter").Update(map[string]interface{}{"value": r.Row.Field("value").Add(1)}).Exec(session)
 	if err != nil {
+		log.Println("EXEC")
 		log.Println(err.Error())
 		return 0, err
 	}
 	cursor, err := r.Table("meta").Get("counter").Field("value").Run(session)
 	if err != nil {
-		log.Println(err.Error())
-		return 0, err
+		err := r.Table("meta").Get("counter").Exec(session)
+		if err != r.ErrEmptyResult && err != nil {
+			log.Println("CURSOR")
+			log.Println(err.Error())
+			return 0, err
+		}
+		err2 := r.Table("meta").Insert(map[string]interface{}{"id": "counter", "value": 0}).Exec(session)
+		if err2 != nil {
+			return 0, err
+		}
+		return 0, nil
 	}
 	cursor.One(&target)
 	if cursor.Err() != nil {
+		log.Println("ONE")
 		return 0, cursor.Err()
 	}
 	final, ok := target.(float64)

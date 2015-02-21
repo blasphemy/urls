@@ -38,6 +38,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+	rdb.Db("urls").TableCreate("meta").Exec(session)
+	rdb.Db("urls").TableCreate("urls").Exec(session)
 	m := martini.Classic()
 	m.Use(render.Renderer(render.Options{
 		Directory:  "templates",
@@ -95,8 +97,11 @@ func WebAddHandler(w http.ResponseWriter, r *http.Request, r2 render.Render) {
 	if k == "" {
 		http.Redirect(w, r, "/", http.StatusMovedPermanently)
 	} else {
+		user := UserData{}
+		user.IpAddress = r.RemoteAddr
+		user.UserAgent = r.UserAgent()
 		k = UrlPreprocessor(k)
-		new, err := GetNewUrl(k, r.Host)
+		new, err := GetNewUrl(k, r.Host, user)
 		if err != nil {
 			pd := GetNewPageData()
 			pd.Message = err.Error()
@@ -115,8 +120,11 @@ func ApiAddURLHandler(r *http.Request) string {
 	if k == "" {
 		return "Error, no url specified"
 	} else {
+		user := UserData{}
+		user.IpAddress = r.RemoteAddr
+		user.UserAgent = r.UserAgent()
 		k := UrlPreprocessor(k)
-		new, err := GetNewUrl(k, r.Host)
+		new, err := GetNewUrl(k, r.Host, user)
 		if err != nil {
 			return err.Error()
 		} else {
