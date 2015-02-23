@@ -75,6 +75,7 @@ func GetNewUrl(link string, host string, user UserData) (*Url, error) {
 	result.Link = link
 	result.Short = config.GetBaseUrl(host) + result.Id
 	result.User = user
+	result.User.IpAddress = utils.IpFromRemoteAddr(result.User.IpAddress)
 	err = r.Table("urls").Insert(result).Exec(session)
 	log.Println(result)
 	if err != nil {
